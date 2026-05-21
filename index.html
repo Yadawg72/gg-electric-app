@@ -576,13 +576,34 @@ const sb = supabase.createClient(
 );
 
 // Handle Supabase auth redirects (password reset, signup confirmation, etc)
+// This runs BEFORE checking the session to ensure tokens are processed
+(async () => {
+  // Listen for auth state changes from URL fragments
+  const { data: { session } } = await sb.auth.getSession();
+  
+  if (session) {
+    currentUser = session.user;
+    bootApp();
+  } else {
+    // Check periodically for session to be established from URL redirect
+    let attempts = 0;
+    const checkInterval = setInterval(async () => {
+      const { data: { session: newSession } } = await sb.auth.getSession();
+      if (newSession) {
+        currentUser = newSession.user;
+        bootApp();
+        clearInterval(checkInterval);
+      }
+      attempts++;
+      if (attempts > 50) clearInterval(checkInterval); // Stop after 5 seconds
+    }, 100);
+  }
+})();
+
 sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
-    if (session) {
-      currentUser = session.user;
-      loadDashboard();
-      showView('dashboard');
-    }
+  if (session && !currentUser) {
+    currentUser = session.user;
+    bootApp();
   }
 });
 
@@ -617,8 +638,8 @@ async function signOut() {
 }
 
 async function checkSession() {
-  // Wait a moment for Supabase to process URL fragment tokens
-  await new Promise(r => setTimeout(r, 100));
+  // Give Supabase time to process any redirect tokens from URL
+  await new Promise(r => setTimeout(r, 500));
   
   const { data } = await sb.auth.getSession();
   if (data?.session) { 
