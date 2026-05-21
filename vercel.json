@@ -1,8 +1,15 @@
 {
-  "rewrites": [
+  "buildCommand": "echo 'No build needed'",
+  "outputDirectory": ".",
+  "headers": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
     }
   ]
 }
