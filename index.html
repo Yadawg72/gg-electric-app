@@ -51,6 +51,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .topbar-nav button{background:none;border:none;padding:6px 14px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--mid);cursor:pointer;transition:all .15s;}
 .topbar-nav button:hover{background:var(--teal-ghost);color:var(--teal);}
 .topbar-nav button.active{background:var(--teal-pale);color:var(--teal-dark);font-weight:600;}
+.mobile-menu-btn{display:none;background:none;border:none;color:var(--teal);font-size:20px;cursor:pointer;padding:8px 12px;margin-right:12px;}
+@media(max-width:768px){
+  .topbar-nav{display:none;}
+  .mobile-menu-btn{display:block;}
+  .sidebar{position:fixed;left:0;top:60px;height:calc(100vh-60px);width:236px;z-index:300;background:white;transform:translateX(-100%);transition:transform .3s ease;box-shadow:var(--shadow-lg);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay{display:none;position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:250;}
+  .sidebar-overlay.open{display:block;}
+}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
 .user-chip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:20px;background:var(--teal-ghost);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--teal-dark);}
 .user-avatar{width:26px;height:26px;border-radius:50%;background:var(--teal);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
@@ -67,8 +76,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .info-grid select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;}
 .layout{display:flex;flex:1;overflow:hidden;}
 
+@media(max-width:768px){
+  .layout{flex-direction:column;}
+}
+
 /* SIDEBAR */
 .sidebar{width:236px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:60px;width:236px;height:calc(100vh-60px);z-index:300;transform:translateX(-100%);transition:transform .3s ease;box-shadow:var(--shadow-lg);}
+  .sidebar.open{transform:translateX(0);}
+}
+.sidebar-overlay{display:none;}
+@media(max-width:768px){
+  .sidebar-overlay{position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:250;display:none;}
+  .sidebar-overlay.open{display:block;}
+}
 .sidebar-search{padding:14px 14px 10px;border-bottom:1px solid var(--border-light);}
 .sidebar-search input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px 7px 32px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--charcoal);outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238fa8a8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;}
 .sidebar-search input:focus{border-color:var(--teal);}
@@ -95,12 +117,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 /* MAIN */
 .main{flex:1;overflow-y:auto;overflow-x:hidden;}
 .page-header{background:var(--white);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:flex-start;gap:16px;}
+@media(max-width:768px){
+  .page-header{padding:16px 20px;flex-direction:column;}
+}
 .page-header-info{flex:1;}
 .page-header h1{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--charcoal);line-height:1.2;}
+@media(max-width:768px){
+  .page-header h1{font-size:20px;}
+}
 .page-header-meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap;}
 .meta-item{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;}
 .meta-item strong{color:var(--mid);font-weight:500;}
 .page-header-actions{display:flex;gap:10px;align-items:center;}
+@media(max-width:768px){
+  .page-header-actions{width:100%;flex-direction:column;}
+  .page-header-actions .btn{width:100%;}
+}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px;}
@@ -119,10 +151,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .btn-ghost{background:none;color:var(--mid);border:1px solid var(--border);}
 .btn-ghost:hover{background:var(--bg);}
 .btn-sm{padding:5px 12px;font-size:12px;}
+@media(max-width:768px){
+  .btn{padding:10px 16px;font-size:14px;min-height:44px;}
+  .btn-sm{padding:8px 12px;font-size:13px;min-height:40px;}
+}
 
 /* CONTENT */
 .content{padding:24px 32px;}
+@media(max-width:768px){
+  .content{padding:16px 16px;}
+}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+@media(max-width:1024px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:768px){
+  .stats-grid{grid-template-columns:1fr;}
+}
 .stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
 .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal-light);border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
 .stat-card.accent-success::after{background:var(--success);}
@@ -146,6 +191,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 /* INFO GRID */
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-light);}
 .info-grid-3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:768px){
+  .info-grid, .info-grid-3{grid-template-columns:1fr;}
+}
 .info-field{background:var(--white);padding:14px 18px;}
 .info-field label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
 .info-field input,.info-field select{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;padding:3px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--charcoal);outline:none;transition:border-color .15s;}
@@ -179,6 +227,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .jobs-table td{padding:12px 16px;font-size:13px;}
 .job-name-cell{font-weight:600;color:var(--teal-dark);display:flex;align-items:center;gap:8px;}
 .job-num-cell{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+@media(max-width:768px){
+  .jobs-table{min-width:100%;}
+  .jobs-table thead th{font-size:9px;padding:8px 10px;}
+  .jobs-table td{padding:10px;font-size:12px;}
+}
 
 /* FILTER BAR */
 .filter-bar{padding:14px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg);}
@@ -294,6 +347,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
         <span class="division">Commercial</span>
       </div>
     </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
     <nav class="topbar-nav">
       <button id="nav-dashboard" class="active" onclick="showView('dashboard')">Dashboard</button>
       <button id="nav-materials" onclick="showView('materials')">Materials &amp; POs</button>
@@ -311,6 +365,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
   </div>
 
   <div class="layout">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileMenu()"></div>
     <div class="sidebar">
       <div class="sidebar-search">
         <input type="text" id="job-search" placeholder="Search jobs..." oninput="renderSidebar(this.value)">
@@ -708,6 +763,15 @@ async function signOut() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
+function toggleMobileMenu() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  }
+}
+
 async function checkSession() {
   // Give Supabase time to process any redirect tokens from URL
   await new Promise(r => setTimeout(r, 500));
@@ -766,6 +830,13 @@ function showView(v) {
   if (v==='materials') loadAllMats();
   if (v==='dashboard') renderDashboard();
   if (v==='settings') renderSettings();
+  // Close mobile menu
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar && overlay) {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  }
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────
