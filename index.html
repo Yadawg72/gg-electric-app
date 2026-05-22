@@ -1251,7 +1251,7 @@ async function handlePhotoUpload(e) {
     const path=`${currentJobId}/photos/${Date.now()}_${file.name}`;
     const { error:upErr } = await sb.storage.from('job-files').upload(path,file);
     if(upErr){showToast('Upload error: '+upErr.message,true);continue;}
-    const { data:ud } = sb.storage.from('job-files').getPublicUrl(path);
+    const { data:ud } = await sb.storage.from('job-files').getPublicUrl(path);
     await sb.from('job_files').insert({job_id:currentJobId,file_name:file.name,file_url:ud.publicUrl,file_category:'photo',file_type:file.type,stage_tag:stage,notes:note,uploaded_by:currentUser.id});
   }
   setLoading(false); document.getElementById('photo-note').value=''; e.target.value='';
@@ -1272,7 +1272,7 @@ async function handleDocUpload(e) {
     const path=`${currentJobId}/docs/${Date.now()}_${file.name}`;
     const { error:upErr } = await sb.storage.from('job-files').upload(path,file);
     if(upErr){showToast('Upload error: '+upErr.message,true);continue;}
-    const { data:ud } = sb.storage.from('job-files').getPublicUrl(path);
+    const { data:ud } = await sb.storage.from('job-files').getPublicUrl(path);
     await sb.from('job_files').insert({job_id:currentJobId,file_name:file.name,file_url:ud.publicUrl,file_category:type,file_type:file.type,notes:note,uploaded_by:currentUser.id});
   }
   setLoading(false); document.getElementById('doc-note').value=''; e.target.value='';
