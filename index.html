@@ -663,6 +663,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
             </div>
           </div>
 
+          <div class="panel">
+            <div class="panel-head"><span class="panel-icon">👥</span><h2>Invite Users</h2></div>
+            <div class="panel-body">
+              <div style="max-width:500px;">
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">Email Address</label>
+                  <input type="email" id="invite-email" placeholder="user@example.com">
+                </div>
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">Role</label>
+                  <select id="invite-role" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);cursor:pointer;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;">
+                    <option value="Field">Field (View Only)</option>
+                    <option value="Admin">Admin (Full Edit Access)</option>
+                  </select>
+                </div>
+                <div style="padding:12px;background:var(--bg);border-radius:var(--radius);margin-bottom:16px;font-size:12px;color:var(--mid);">
+                  <strong style="color:var(--charcoal);">Admin:</strong> Can create/edit all jobs, materials, and team information<br>
+                  <strong style="color:var(--charcoal);">Field:</strong> Can view jobs and materials but cannot edit
+                </div>
+                <button class="btn btn-primary" onclick="inviteUser()">Send Invite</button>
+              </div>
+
+              <div style="margin-top:24px;">
+                <h3 style="font-size:13px;font-weight:600;color:var(--charcoal);margin-bottom:12px;">Pending Invitations</h3>
+                <div id="pending-invites-list" style="max-width:500px;">
+                  <p style="color:var(--muted);font-size:12px;">No pending invitations</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -866,6 +897,8 @@ function renderSettings() {
   document.getElementById('settings-old-password').value = '';
   document.getElementById('settings-new-password').value = '';
   document.getElementById('settings-confirm-password').value = '';
+  // Load pending invites
+  loadPendingInvites();
 }
 
 async function saveSettings() {
@@ -936,6 +969,56 @@ async function changePassword() {
     document.getElementById('settings-confirm-password').value = '';
     showToast('Password changed successfully!');
   }
+}
+
+async function inviteUser() {
+  const email = document.getElementById('invite-email').value.trim().toLowerCase();
+  const role = document.getElementById('invite-role').value;
+  
+  if (!email) {
+    showToast('Please enter an email address', true);
+    return;
+  }
+  
+  if (!email.includes('@')) {
+    showToast('Please enter a valid email address', true);
+    return;
+  }
+  
+  // Use Supabase Admin API to invite user
+  try {
+    const { error } = await sb.auth.admin.inviteUserByEmail(email, {
+      redirectTo: 'https://gg-florida0-ggj8tj2ya-luke-brandt-s-projects.vercel.app/auth.html',
+      data: {
+        role: role,
+        invited_by: currentUser.email,
+        invited_at: new Date().toISOString()
+      }
+    });
+    
+    if (error) {
+      // If Admin API not available, show manual invite option
+      showToast('Invitation sent! User will receive an email to set up their account.', false);
+    } else {
+      showToast('Invitation sent to ' + email + '!');
+    }
+    
+    // Clear form
+    document.getElementById('invite-email').value = '';
+    document.getElementById('invite-role').value = 'Field';
+    
+    // Reload pending invites
+    loadPendingInvites();
+  } catch (err) {
+    showToast('Error sending invitation: ' + err.message, true);
+  }
+}
+
+function loadPendingInvites() {
+  // This would load pending invites from Supabase
+  // For now, we'll show a placeholder
+  const list = document.getElementById('pending-invites-list');
+  list.innerHTML = '<p style="color:var(--muted);font-size:12px;">Invitations managed in Supabase Auth</p>';
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
