@@ -33,19 +33,19 @@ const sb = window.supabase.createClient(
         // User has completed signup, go to dashboard
         status.textContent = 'Welcome back! Redirecting...';
         setTimeout(() => {
-          window.location.href = 'https://gg-florida0-ggj8tj2ya-luke-brandt-s-projects.vercel.app/';
+          window.location.href = 'https://gg-florida0.vercel.app/';
         }, 1000);
       } else {
         // New user from invite, go to signup completion page
         status.textContent = 'Setting up your account...';
         setTimeout(() => {
-          window.location.href = 'https://gg-florida0-ggj8tj2ya-luke-brandt-s-projects.vercel.app/signup.html';
+          window.location.href = 'https://gg-florida0.vercel.app/signup.html';
         }, 500);
       }
     } else {
       status.textContent = 'No session found. Redirecting to login...';
       setTimeout(() => {
-        window.location.href = 'https://gg-florida0-ggj8tj2ya-luke-brandt-s-projects.vercel.app/';
+        window.location.href = 'https://gg-florida0.vercel.app/';
       }, 2000);
     }
   } catch (err) {
