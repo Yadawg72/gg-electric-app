@@ -60,7 +60,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .save-indicator.saving{color:var(--warning);}
 .save-indicator.saved{color:var(--success);}
 
-/* LAYOUT */
+/* SETTINGS */
+.field-label{display:block;font-size:12px;font-weight:600;color:var(--charcoal);margin-bottom:6px;letter-spacing:.5px;}
+.info-grid input, .info-grid select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);outline:none;transition:border-color .15s;}
+.info-grid input:focus, .info-grid select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(74,139,140,0.1);}
+.info-grid select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;}
 .layout{display:flex;flex:1;overflow:hidden;}
 
 /* SIDEBAR */
@@ -294,6 +298,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
       <button id="nav-dashboard" class="active" onclick="showView('dashboard')">Dashboard</button>
       <button id="nav-materials" onclick="showView('materials')">Materials &amp; POs</button>
       <button id="nav-job" style="display:none" onclick="showView('job')">Current Job</button>
+      <button id="nav-settings" onclick="showView('settings')">Settings</button>
     </nav>
     <div class="topbar-right">
       <span class="save-indicator" id="save-ind"></span>
@@ -540,6 +545,72 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
         </div>
       </div>
 
+      <!-- SETTINGS -->
+      <div id="view-settings" style="display:none">
+        <div class="page-header">
+          <div class="page-header-info">
+            <h1>Settings</h1>
+            <div class="page-header-meta">
+              <span class="meta-item">Manage your account and preferences</span>
+            </div>
+          </div>
+        </div>
+        <div class="content">
+
+          <div class="panel">
+            <div class="panel-head"><span class="panel-icon">👤</span><h2>Profile Information</h2></div>
+            <div class="panel-body">
+              <div class="info-grid info-grid-2">
+                <div>
+                  <label class="field-label">First Name</label>
+                  <input type="text" id="settings-first-name" placeholder="First name">
+                </div>
+                <div>
+                  <label class="field-label">Last Name</label>
+                  <input type="text" id="settings-last-name" placeholder="Last name">
+                </div>
+                <div>
+                  <label class="field-label">Email</label>
+                  <input type="email" id="settings-email" placeholder="Email" disabled style="background:var(--bg);cursor:not-allowed;">
+                </div>
+                <div>
+                  <label class="field-label">Role</label>
+                  <select id="settings-role">
+                    <option value="Admin">Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Staff">Staff</option>
+                    <option value="Viewer">Viewer</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px;" onclick="saveSettings()">Save Changes</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span class="panel-icon">🔑</span><h2>Change Password</h2></div>
+            <div class="panel-body">
+              <div style="max-width:400px;">
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">Current Password</label>
+                  <input type="password" id="settings-old-password" placeholder="Your current password">
+                </div>
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">New Password</label>
+                  <input type="password" id="settings-new-password" placeholder="Enter new password">
+                </div>
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">Confirm New Password</label>
+                  <input type="password" id="settings-confirm-password" placeholder="Confirm new password">
+                </div>
+                <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -687,13 +758,14 @@ async function loadAllMats() {
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────
 function showView(v) {
-  ['dashboard','materials','job'].forEach(n => {
+  ['dashboard','materials','job','settings'].forEach(n => {
     document.getElementById('view-'+n).style.display = n===v ? 'block' : 'none';
     const btn = document.getElementById('nav-'+n);
     if (btn) btn.classList.toggle('active', n===v);
   });
   if (v==='materials') loadAllMats();
   if (v==='dashboard') renderDashboard();
+  if (v==='settings') renderSettings();
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────
@@ -709,6 +781,90 @@ function renderSidebar(q='') {
       </div>
       <span class="status-pip ${pipClass(j.status)}"></span>
     </div>`).join('') || '<div style="padding:16px;font-size:12px;color:var(--muted);text-align:center">No jobs found</div>';
+}
+
+// ── SETTINGS ───────────────────────────────────────────────────────────────
+function renderSettings() {
+  // Load current user data into settings form
+  const metadata = currentUser.user_metadata || {};
+  document.getElementById('settings-first-name').value = metadata.first_name || '';
+  document.getElementById('settings-last-name').value = metadata.last_name || '';
+  document.getElementById('settings-email').value = currentUser.email;
+  document.getElementById('settings-role').value = metadata.role || 'Staff';
+  // Clear password fields
+  document.getElementById('settings-old-password').value = '';
+  document.getElementById('settings-new-password').value = '';
+  document.getElementById('settings-confirm-password').value = '';
+}
+
+async function saveSettings() {
+  const firstName = document.getElementById('settings-first-name').value.trim();
+  const lastName = document.getElementById('settings-last-name').value.trim();
+  const role = document.getElementById('settings-role').value;
+  
+  if (!firstName || !lastName) {
+    showToast('Please fill in all fields', true);
+    return;
+  }
+  
+  const { error } = await sb.auth.updateUser({
+    data: {
+      first_name: firstName,
+      last_name: lastName,
+      role: role
+    }
+  });
+  
+  if (error) {
+    showToast('Error updating profile: ' + error.message, true);
+  } else {
+    currentUser = { ...currentUser, user_metadata: { ...currentUser.user_metadata, first_name: firstName, last_name: lastName, role: role } };
+    showToast('Profile updated successfully!');
+  }
+}
+
+async function changePassword() {
+  const oldPassword = document.getElementById('settings-old-password').value;
+  const newPassword = document.getElementById('settings-new-password').value;
+  const confirmPassword = document.getElementById('settings-confirm-password').value;
+  
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    showToast('Please fill in all password fields', true);
+    return;
+  }
+  
+  if (newPassword !== confirmPassword) {
+    showToast('New passwords do not match', true);
+    return;
+  }
+  
+  if (newPassword.length < 8) {
+    showToast('Password must be at least 8 characters', true);
+    return;
+  }
+  
+  // Verify old password by signing in again
+  const { error: signInError } = await sb.auth.signInWithPassword({
+    email: currentUser.email,
+    password: oldPassword
+  });
+  
+  if (signInError) {
+    showToast('Current password is incorrect', true);
+    return;
+  }
+  
+  // Update to new password
+  const { error } = await sb.auth.updateUser({ password: newPassword });
+  
+  if (error) {
+    showToast('Error changing password: ' + error.message, true);
+  } else {
+    document.getElementById('settings-old-password').value = '';
+    document.getElementById('settings-new-password').value = '';
+    document.getElementById('settings-confirm-password').value = '';
+    showToast('Password changed successfully!');
+  }
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
