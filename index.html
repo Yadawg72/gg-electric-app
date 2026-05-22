@@ -994,7 +994,7 @@ async function inviteUser() {
     
     // Invite user with service role
     const { data, error } = await sbAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: 'https://gg-florida0-ggj8tj2ya-luke-brandt-s-projects.vercel.app/auth.html',
+      redirectTo: 'https://gg-florida0.vercel.app/auth.html',
       data: {
         role: role,
         invited_by: currentUser.email,
