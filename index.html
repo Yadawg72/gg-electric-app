@@ -1538,6 +1538,13 @@ function loadBillingInfo() {
 let pendingSuggestions = [];
 
 function openDailyReportModal() {
+  editingReportId = null;
+  
+  // Reset modal to "Add" mode
+  document.querySelector('#modal-daily-report h2').textContent = 'Daily Field Report';
+  document.querySelector('#modal-daily-report .btn-primary').textContent = 'Submit Report';
+  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick', 'submitDailyReport()');
+  
   // Pre-fill with today's date
   document.getElementById('dr-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('dr-employee').value = '';
@@ -1614,11 +1621,10 @@ async function submitDailyReport() {
       data: {
         job_id: currentJobId,
         employee_name: employee,
-        date_worked: date,
+        work_date: date,
         hours: hours,
         overtime: overtime,
-        work_description: work,
-        created_by: currentUser.id
+        work_performed: work
       }
     });
   }
@@ -1628,8 +1634,13 @@ async function submitDailyReport() {
     materialsUsed.split('\n').filter(l => l.trim()).forEach(line => {
       pendingSuggestions.push({
         type: 'material_used',
-        label: `Mark as used: ${line.trim()}`,
-        data: { line: line.trim() }
+        label: `Add as used material: ${line.trim()}`,
+        data: {
+          job_id: currentJobId,
+          name: line.trim(),
+          status: 'Received',
+          sort_order: 999
+        }
       });
     });
   }
@@ -1642,9 +1653,9 @@ async function submitDailyReport() {
         label: `Add to materials list: ${line.trim()}`,
         data: {
           job_id: currentJobId,
-          material_name: line.trim(),
+          name: line.trim(),
           status: 'Needed',
-          created_by: currentUser.id
+          sort_order: 999
         }
       });
     });
@@ -1673,6 +1684,7 @@ async function applySuggestions() {
   setLoading(true, 'Applying updates...');
   
   let applied = 0;
+  let errors = [];
   
   for (let i = 0; i < pendingSuggestions.length; i++) {
     const checkbox = document.getElementById(`sug-${i}`);
@@ -1680,24 +1692,34 @@ async function applySuggestions() {
     
     const s = pendingSuggestions[i];
     
-    if (s.type === 'hours') {
-      await sb.from('hours_logged').insert(s.data);
-      applied++;
-    } else if (s.type === 'material_needed') {
-      await sb.from('materials').insert(s.data);
-      applied++;
-    } else if (s.type === 'material_used') {
-      // Just log it as a note for now since we don't auto-deduct
-      applied++;
+    try {
+      if (s.type === 'hours') {
+        const { error } = await sb.from('hours_logged').insert(s.data);
+        if (error) errors.push('Hours: ' + error.message);
+        else applied++;
+      } else if (s.type === 'material_needed' || s.type === 'material_used') {
+        const { error } = await sb.from('materials').insert(s.data);
+        if (error) errors.push('Material: ' + error.message);
+        else applied++;
+      }
+    } catch (err) {
+      errors.push(err.message);
     }
   }
   
   setLoading(false);
   closeModal('modal-suggestions');
-  showToast(`Applied ${applied} update(s)!`);
+  
+  if (errors.length > 0) {
+    showToast(`Applied ${applied}, but ${errors.length} failed: ${errors[0]}`, true);
+    console.error('Suggestion errors:', errors);
+  } else {
+    showToast(`Applied ${applied} update(s)!`);
+  }
   
   // Refresh related sections
-  await loadJobData(currentJobId);
+  if (typeof loadMaterials === 'function') await loadMaterials();
+  if (typeof loadHours === 'function') await loadHours();
 }
 
 async function loadDailyReports() {
@@ -1724,9 +1746,10 @@ async function loadDailyReports() {
           <strong style="font-size:13px;color:var(--charcoal);">${r.employee_name}</strong>
           <span style="color:var(--muted);font-size:12px;margin-left:8px;">${new Date(r.report_date).toLocaleDateString()}</span>
         </div>
-        <div>
+        <div style="display:flex;align-items:center;gap:8px;">
           <span style="background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;">${r.hours_worked}h${r.overtime ? ' OT' : ''}</span>
-          <button onclick="deleteReport('${r.id}')" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;font-size:14px;">×</button>
+          <button onclick="editDailyReport('${r.id}')" style="background:none;border:1px solid var(--border);color:var(--teal);cursor:pointer;padding:3px 10px;border-radius:4px;font-size:11px;">Edit</button>
+          <button onclick="deleteReport('${r.id}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;line-height:1;">×</button>
         </div>
       </div>
       ${r.work_completed ? `<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Work:</strong> ${r.work_completed}</div>` : ''}
@@ -1735,6 +1758,93 @@ async function loadDailyReports() {
       ${r.photo_url ? `<div style="margin-top:8px;"><a href="${r.photo_url}" target="_blank" style="color:var(--teal);font-size:12px;text-decoration:none;">📷 View Report Photo</a></div>` : ''}
     </div>
   `).join('');
+}
+
+let editingReportId = null;
+
+async function editDailyReport(id) {
+  const { data, error } = await sb.from('daily_reports').select('*').eq('id', id).single();
+  if (error || !data) {
+    showToast('Error loading report', true);
+    return;
+  }
+  
+  editingReportId = id;
+  
+  // Pre-fill modal with existing data
+  document.getElementById('dr-date').value = data.report_date;
+  document.getElementById('dr-employee').value = data.employee_name || '';
+  document.getElementById('dr-hours').value = data.hours_worked || '';
+  document.getElementById('dr-overtime').value = data.overtime ? 'true' : 'false';
+  document.getElementById('dr-work').value = data.work_completed || '';
+  document.getElementById('dr-materials-used').value = data.materials_used || '';
+  document.getElementById('dr-materials-needed').value = data.materials_needed || '';
+  document.getElementById('dr-photo').value = '';
+  
+  // Change modal title and button
+  document.querySelector('#modal-daily-report h2').textContent = 'Edit Daily Report';
+  document.querySelector('#modal-daily-report .btn-primary').textContent = 'Update Report';
+  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick', 'updateDailyReport()');
+  
+  document.getElementById('modal-daily-report').classList.add('open');
+}
+
+async function updateDailyReport() {
+  const date = document.getElementById('dr-date').value;
+  const employee = document.getElementById('dr-employee').value.trim();
+  const hours = parseFloat(document.getElementById('dr-hours').value) || 0;
+  const overtime = document.getElementById('dr-overtime').value === 'true';
+  const work = document.getElementById('dr-work').value.trim();
+  const materialsUsed = document.getElementById('dr-materials-used').value.trim();
+  const materialsNeeded = document.getElementById('dr-materials-needed').value.trim();
+  const photoFile = document.getElementById('dr-photo').files[0];
+  
+  if (!date || !employee || hours <= 0) {
+    showToast('Please fill in date, employee, and hours', true);
+    return;
+  }
+  
+  setLoading(true, 'Updating report...');
+  
+  const updateData = {
+    report_date: date,
+    employee_name: employee,
+    hours_worked: hours,
+    overtime: overtime,
+    work_completed: work,
+    materials_used: materialsUsed,
+    materials_needed: materialsNeeded
+  };
+  
+  // Upload new photo if provided
+  if (photoFile) {
+    const path = `${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
+    const { error: upErr } = await sb.storage.from('job-files').upload(path, photoFile);
+    if (!upErr) {
+      const { data: ud } = await sb.storage.from('job-files').getPublicUrl(path);
+      updateData.photo_url = ud.publicUrl;
+    }
+  }
+  
+  const { error } = await sb.from('daily_reports').update(updateData).eq('id', editingReportId);
+  
+  setLoading(false);
+  
+  if (error) {
+    showToast('Error updating report: ' + error.message, true);
+    return;
+  }
+  
+  showToast('Report updated!');
+  closeModal('modal-daily-report');
+  
+  // Reset modal back to "Add" mode
+  document.querySelector('#modal-daily-report h2').textContent = 'Daily Field Report';
+  document.querySelector('#modal-daily-report .btn-primary').textContent = 'Submit Report';
+  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick', 'submitDailyReport()');
+  editingReportId = null;
+  
+  loadDailyReports();
 }
 
 async function deleteReport(id) {
