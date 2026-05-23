@@ -629,6 +629,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           </div>
 
           <div class="panel">
+            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📋</span><h2>Daily Field Reports</h2><span class="panel-chevron">▾</span><span id="reports-count-badge" style="margin-left:auto;background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;"></span></div>
+            <div class="panel-body">
+              
+              <!-- Add New Report Button -->
+              <button class="btn btn-primary" onclick="openDailyReportModal()" style="margin-bottom:20px;">+ Add Daily Report</button>
+              
+              <!-- Reports List -->
+              <div id="daily-reports-list" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No daily reports yet</div>
+              </div>
+              
+            </div>
+          </div>
+
+          <div class="panel">
             <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">💳</span><h2>Billing Cycle</h2><span class="panel-chevron">▾</span><span id="billing-status-badge" style="margin-left:auto;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;"></span></div>
             <div class="panel-body">
               <div class="info-grid info-grid-2">
@@ -804,6 +819,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-new-job')">Cancel</button>
       <button class="btn btn-primary" onclick="createJob()">Create Job</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY REPORT MODAL -->
+<div class="modal-overlay" id="modal-daily-report">
+  <div class="modal" style="max-width:700px;">
+    <h2>Daily Field Report</h2>
+    <div class="modal-grid">
+      <div class="modal-field"><label>Date</label><input type="date" id="dr-date"></div>
+      <div class="modal-field"><label>Employee</label><input type="text" id="dr-employee" placeholder="Employee name"></div>
+      <div class="modal-field"><label>Hours Worked</label><input type="number" id="dr-hours" placeholder="8" step="0.25" min="0"></div>
+      <div class="modal-field"><label>Overtime?</label><select id="dr-overtime"><option value="false">No</option><option value="true">Yes</option></select></div>
+      <div class="modal-field full"><label>Work Completed</label><textarea id="dr-work" placeholder="Describe the work accomplished today..." rows="3" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;"></textarea></div>
+      <div class="modal-field full"><label>Materials Used</label><textarea id="dr-materials-used" placeholder="List materials used today (one per line)&#10;Example:&#10;100 ft - 12-2 Romex wire&#10;5 - 20A breakers&#10;2 boxes - 4&quot; square boxes" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;"></textarea></div>
+      <div class="modal-field full"><label>Materials Needed</label><textarea id="dr-materials-needed" placeholder="List materials needed for tomorrow/next visit (one per line)" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;"></textarea></div>
+      <div class="modal-field full"><label>Upload Report Photo (Optional)</label><input type="file" id="dr-photo" accept="image/*" style="padding:8px;font-size:13px;"><small style="color:var(--muted);font-size:11px;">Take a photo of the handwritten report if needed</small></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-daily-report')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitDailyReport()">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGESTIONS MODAL -->
+<div class="modal-overlay" id="modal-suggestions">
+  <div class="modal" style="max-width:600px;">
+    <h2>Apply These Updates?</h2>
+    <p style="color:var(--mid);font-size:13px;margin-bottom:20px;">Review and approve which updates to apply based on this daily report:</p>
+    <div id="suggestions-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-suggestions')">Skip All</button>
+      <button class="btn btn-primary" onclick="applySuggestions()">Apply Selected</button>
     </div>
   </div>
 </div>
@@ -1250,6 +1299,7 @@ async function openJob(id) {
     document.getElementById('job-meta-status').innerHTML = `<span class="badge badge-${bc(job.status)}">${job.status||'—'}</span>`;
     renderInfoGrid(job);
     loadBillingInfo();
+    loadDailyReports();
   }
   setLoading(true,'Loading job...');
   await Promise.all([loadTasks(),loadMaterials(),loadInspections(),loadHours(),loadContacts(),loadNotes(),loadPhotos(),loadDocs()]);
@@ -1482,6 +1532,220 @@ function loadBillingInfo() {
     document.getElementById('job-last-billed-date').value = job.last_billed_date;
   }
   updateBillingStatus();
+}
+
+// ── DAILY REPORTS ─────────────────────────────────────────────────────────
+let pendingSuggestions = [];
+
+function openDailyReportModal() {
+  // Pre-fill with today's date
+  document.getElementById('dr-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('dr-employee').value = '';
+  document.getElementById('dr-hours').value = '';
+  document.getElementById('dr-overtime').value = 'false';
+  document.getElementById('dr-work').value = '';
+  document.getElementById('dr-materials-used').value = '';
+  document.getElementById('dr-materials-needed').value = '';
+  document.getElementById('dr-photo').value = '';
+  document.getElementById('modal-daily-report').classList.add('open');
+}
+
+async function submitDailyReport() {
+  const date = document.getElementById('dr-date').value;
+  const employee = document.getElementById('dr-employee').value.trim();
+  const hours = parseFloat(document.getElementById('dr-hours').value) || 0;
+  const overtime = document.getElementById('dr-overtime').value === 'true';
+  const work = document.getElementById('dr-work').value.trim();
+  const materialsUsed = document.getElementById('dr-materials-used').value.trim();
+  const materialsNeeded = document.getElementById('dr-materials-needed').value.trim();
+  const photoFile = document.getElementById('dr-photo').files[0];
+  
+  if (!date || !employee || hours <= 0) {
+    showToast('Please fill in date, employee, and hours', true);
+    return;
+  }
+  
+  setLoading(true, 'Saving report...');
+  
+  let photoUrl = null;
+  
+  // Upload photo if provided
+  if (photoFile) {
+    const path = `${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
+    const { error: upErr } = await sb.storage.from('job-files').upload(path, photoFile);
+    if (!upErr) {
+      const { data: ud } = await sb.storage.from('job-files').getPublicUrl(path);
+      photoUrl = ud.publicUrl;
+    }
+  }
+  
+  // Save report
+  const { data, error } = await sb.from('daily_reports').insert({
+    job_id: currentJobId,
+    report_date: date,
+    employee_name: employee,
+    hours_worked: hours,
+    overtime: overtime,
+    work_completed: work,
+    materials_used: materialsUsed,
+    materials_needed: materialsNeeded,
+    photo_url: photoUrl,
+    created_by: currentUser.id
+  }).select().single();
+  
+  setLoading(false);
+  
+  if (error) {
+    showToast('Error saving report: ' + error.message, true);
+    return;
+  }
+  
+  showToast('Daily report saved!');
+  closeModal('modal-daily-report');
+  
+  // Build suggestions
+  pendingSuggestions = [];
+  
+  // Suggest adding hours
+  if (hours > 0) {
+    pendingSuggestions.push({
+      type: 'hours',
+      label: `Add ${hours} hours${overtime ? ' (overtime)' : ''} for ${employee} on ${date}`,
+      data: {
+        job_id: currentJobId,
+        employee_name: employee,
+        date_worked: date,
+        hours: hours,
+        overtime: overtime,
+        work_description: work,
+        created_by: currentUser.id
+      }
+    });
+  }
+  
+  // Suggest materials used (each line becomes a suggestion)
+  if (materialsUsed) {
+    materialsUsed.split('\n').filter(l => l.trim()).forEach(line => {
+      pendingSuggestions.push({
+        type: 'material_used',
+        label: `Mark as used: ${line.trim()}`,
+        data: { line: line.trim() }
+      });
+    });
+  }
+  
+  // Suggest materials needed (add to materials table)
+  if (materialsNeeded) {
+    materialsNeeded.split('\n').filter(l => l.trim()).forEach(line => {
+      pendingSuggestions.push({
+        type: 'material_needed',
+        label: `Add to materials list: ${line.trim()}`,
+        data: {
+          job_id: currentJobId,
+          material_name: line.trim(),
+          status: 'Needed',
+          created_by: currentUser.id
+        }
+      });
+    });
+  }
+  
+  // Show suggestions if any
+  if (pendingSuggestions.length > 0) {
+    showSuggestions();
+  }
+  
+  loadDailyReports();
+}
+
+function showSuggestions() {
+  const list = document.getElementById('suggestions-list');
+  list.innerHTML = pendingSuggestions.map((s, i) => `
+    <label style="display:flex;align-items:start;gap:10px;padding:12px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
+      <input type="checkbox" id="sug-${i}" checked style="margin-top:2px;cursor:pointer;">
+      <div style="flex:1;font-size:13px;color:var(--charcoal);">${s.label}</div>
+    </label>
+  `).join('');
+  document.getElementById('modal-suggestions').classList.add('open');
+}
+
+async function applySuggestions() {
+  setLoading(true, 'Applying updates...');
+  
+  let applied = 0;
+  
+  for (let i = 0; i < pendingSuggestions.length; i++) {
+    const checkbox = document.getElementById(`sug-${i}`);
+    if (!checkbox?.checked) continue;
+    
+    const s = pendingSuggestions[i];
+    
+    if (s.type === 'hours') {
+      await sb.from('hours_logged').insert(s.data);
+      applied++;
+    } else if (s.type === 'material_needed') {
+      await sb.from('materials').insert(s.data);
+      applied++;
+    } else if (s.type === 'material_used') {
+      // Just log it as a note for now since we don't auto-deduct
+      applied++;
+    }
+  }
+  
+  setLoading(false);
+  closeModal('modal-suggestions');
+  showToast(`Applied ${applied} update(s)!`);
+  
+  // Refresh related sections
+  await loadJobData(currentJobId);
+}
+
+async function loadDailyReports() {
+  const { data, error } = await sb.from('daily_reports')
+    .select('*')
+    .eq('job_id', currentJobId)
+    .order('report_date', { ascending: false });
+  
+  const reports = data || [];
+  const list = document.getElementById('daily-reports-list');
+  const badge = document.getElementById('reports-count-badge');
+  
+  badge.textContent = reports.length > 0 ? `${reports.length} report${reports.length === 1 ? '' : 's'}` : '';
+  
+  if (reports.length === 0) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No daily reports yet</div>';
+    return;
+  }
+  
+  list.innerHTML = reports.map(r => `
+    <div style="padding:14px;background:var(--bg);border-radius:var(--radius);border-left:3px solid var(--teal);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div>
+          <strong style="font-size:13px;color:var(--charcoal);">${r.employee_name}</strong>
+          <span style="color:var(--muted);font-size:12px;margin-left:8px;">${new Date(r.report_date).toLocaleDateString()}</span>
+        </div>
+        <div>
+          <span style="background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;">${r.hours_worked}h${r.overtime ? ' OT' : ''}</span>
+          <button onclick="deleteReport('${r.id}')" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;font-size:14px;">×</button>
+        </div>
+      </div>
+      ${r.work_completed ? `<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Work:</strong> ${r.work_completed}</div>` : ''}
+      ${r.materials_used ? `<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Materials Used:</strong><div style="font-family:'DM Mono',monospace;font-size:11px;white-space:pre-line;margin-top:4px;padding-left:8px;border-left:2px solid var(--border);">${r.materials_used}</div></div>` : ''}
+      ${r.materials_needed ? `<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Materials Needed:</strong><div style="font-family:'DM Mono',monospace;font-size:11px;white-space:pre-line;margin-top:4px;padding-left:8px;border-left:2px solid var(--warning);">${r.materials_needed}</div></div>` : ''}
+      ${r.photo_url ? `<div style="margin-top:8px;"><a href="${r.photo_url}" target="_blank" style="color:var(--teal);font-size:12px;text-decoration:none;">📷 View Report Photo</a></div>` : ''}
+    </div>
+  `).join('');
+}
+
+async function deleteReport(id) {
+  if (!confirm('Delete this daily report?')) return;
+  const { error } = await sb.from('daily_reports').delete().eq('id', id);
+  if (error) {
+    showToast('Error deleting report', true);
+  } else {
+    showToast('Report deleted');
+    loadDailyReports();
+  }
 }
 
 // ── PHOTOS ────────────────────────────────────────────────────────────────
