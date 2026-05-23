@@ -721,32 +721,61 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           </div>
 
           <div class="panel">
-            <div class="panel-head"><span class="panel-icon">👥</span><h2>Invite Users</h2></div>
+            <div class="panel-head"><span class="panel-icon">👥</span><h2>Create New User</h2></div>
             <div class="panel-body">
               <div style="max-width:500px;">
+                <div style="padding:12px;background:var(--teal-pale);border-radius:var(--radius);margin-bottom:16px;font-size:12px;color:var(--teal-dark);">
+                  <strong>How it works:</strong> Create the user's account here, then share the email and temporary password with them. They can log in immediately and change their password from Settings.
+                </div>
+                
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">First Name</label>
+                  <input type="text" id="new-user-first-name" placeholder="John" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
+                </div>
+                
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">Last Name</label>
+                  <input type="text" id="new-user-last-name" placeholder="Doe" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
+                </div>
+                
                 <div style="margin-bottom:16px;">
                   <label class="field-label">Email Address</label>
-                  <input type="email" id="invite-email" placeholder="user@example.com">
+                  <input type="email" id="new-user-email" placeholder="user@example.com" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
                 </div>
+                
+                <div style="margin-bottom:16px;">
+                  <label class="field-label">Temporary Password</label>
+                  <div style="display:flex;gap:8px;">
+                    <input type="text" id="new-user-password" placeholder="Click Generate or type a password" style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:13px;">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="generatePassword()">Generate</button>
+                  </div>
+                  <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block;">User can change this after logging in</small>
+                </div>
+                
                 <div style="margin-bottom:16px;">
                   <label class="field-label">Role</label>
-                  <select id="invite-role" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);cursor:pointer;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;">
+                  <select id="new-user-role" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);cursor:pointer;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;">
                     <option value="Field">Field (View Only)</option>
                     <option value="Admin">Admin (Full Edit Access)</option>
                   </select>
                 </div>
+                
                 <div style="padding:12px;background:var(--bg);border-radius:var(--radius);margin-bottom:16px;font-size:12px;color:var(--mid);">
                   <strong style="color:var(--charcoal);">Admin:</strong> Can create/edit all jobs, materials, and team information<br>
                   <strong style="color:var(--charcoal);">Field:</strong> Can view jobs and materials but cannot edit
                 </div>
-                <button class="btn btn-primary" onclick="inviteUser()">Send Invite</button>
+                
+                <button class="btn btn-primary" onclick="createNewUser()">Create User Account</button>
               </div>
-
-              <div style="margin-top:24px;">
-                <h3 style="font-size:13px;font-weight:600;color:var(--charcoal);margin-bottom:12px;">Pending Invitations</h3>
-                <div id="pending-invites-list" style="max-width:500px;">
-                  <p style="color:var(--muted);font-size:12px;">No pending invitations</p>
+              
+              <div id="new-user-success" style="display:none;margin-top:20px;padding:16px;background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius);max-width:500px;">
+                <h3 style="color:var(--success);font-size:14px;font-weight:600;margin-bottom:8px;">✓ Account Created Successfully!</h3>
+                <p style="font-size:12px;color:var(--charcoal);margin-bottom:12px;">Share these credentials with the user:</p>
+                <div style="background:white;padding:12px;border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;">
+                  <div><strong>Email:</strong> <span id="created-email"></span></div>
+                  <div style="margin-top:6px;"><strong>Password:</strong> <span id="created-password"></span></div>
                 </div>
+                <button class="btn btn-ghost btn-sm" style="margin-top:12px;" onclick="copyCredentials()">📋 Copy Credentials</button>
               </div>
             </div>
           </div>
@@ -1013,8 +1042,6 @@ function renderSettings() {
   document.getElementById('settings-old-password').value = '';
   document.getElementById('settings-new-password').value = '';
   document.getElementById('settings-confirm-password').value = '';
-  // Load pending invites
-  loadPendingInvites();
 }
 
 async function saveSettings() {
@@ -1087,34 +1114,54 @@ async function changePassword() {
   }
 }
 
-async function inviteUser() {
-  const email = document.getElementById('invite-email').value.trim().toLowerCase();
-  const role = document.getElementById('invite-role').value;
+function generatePassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  document.getElementById('new-user-password').value = password;
+}
+
+async function createNewUser() {
+  const firstName = document.getElementById('new-user-first-name').value.trim();
+  const lastName = document.getElementById('new-user-last-name').value.trim();
+  const email = document.getElementById('new-user-email').value.trim().toLowerCase();
+  const password = document.getElementById('new-user-password').value;
+  const role = document.getElementById('new-user-role').value;
   
-  if (!email) {
-    showToast('Please enter an email address', true);
+  if (!firstName || !lastName) {
+    showToast('Please enter first and last name', true);
     return;
   }
   
-  if (!email.includes('@')) {
+  if (!email || !email.includes('@')) {
     showToast('Please enter a valid email address', true);
     return;
   }
   
+  if (!password || password.length < 8) {
+    showToast('Password must be at least 8 characters', true);
+    return;
+  }
+  
   try {
-    // Create a Supabase client with service role key for admin operations
+    // Create Supabase client with service role key for admin operations
     const sbAdmin = window.supabase.createClient(
       'https://cghhtoshpmfcreawmfvm.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaGh0b3NocG1mY3JlYXdtZnZtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODQ2MDc5OSwiZXhwIjoyMDk0MDM2Nzk5fQ.sSQ_bmgJBpZ-SoK4b6yuS0_u5gOr_rRNGv4lMjc3NfQ'
     );
     
-    // Invite user with service role
-    const { data, error } = await sbAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: 'https://gg-florida0.vercel.app/',
-      data: {
+    // Create user with confirmed email (no email verification needed)
+    const { data, error } = await sbAdmin.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        first_name: firstName,
+        last_name: lastName,
         role: role,
-        invited_by: currentUser.email,
-        invited_at: new Date().toISOString()
+        created_by: currentUser.email
       }
     });
     
@@ -1123,24 +1170,34 @@ async function inviteUser() {
       return;
     }
     
-    showToast('Invitation sent to ' + email + ' as ' + role + ' user!');
+    // Show success with credentials
+    document.getElementById('created-email').textContent = email;
+    document.getElementById('created-password').textContent = password;
+    document.getElementById('new-user-success').style.display = 'block';
     
     // Clear form
-    document.getElementById('invite-email').value = '';
-    document.getElementById('invite-role').value = 'Field';
+    document.getElementById('new-user-first-name').value = '';
+    document.getElementById('new-user-last-name').value = '';
+    document.getElementById('new-user-email').value = '';
+    document.getElementById('new-user-password').value = '';
+    document.getElementById('new-user-role').value = 'Field';
     
-    // Reload pending invites
-    loadPendingInvites();
+    showToast('User account created successfully!');
   } catch (err) {
-    showToast('Error sending invitation: ' + err.message, true);
+    showToast('Error creating user: ' + err.message, true);
   }
 }
 
-function loadPendingInvites() {
-  // This would load pending invites from Supabase
-  // For now, we'll show a placeholder
-  const list = document.getElementById('pending-invites-list');
-  list.innerHTML = '<p style="color:var(--muted);font-size:12px;">Invitations managed in Supabase Auth</p>';
+function copyCredentials() {
+  const email = document.getElementById('created-email').textContent;
+  const password = document.getElementById('created-password').textContent;
+  const text = `G&G Electric App Login:\nWebsite: https://gg-florida0.vercel.app\nEmail: ${email}\nPassword: ${password}\n\nYou can change your password after logging in (Settings → Change Password)`;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Credentials copied to clipboard!');
+  }).catch(() => {
+    showToast('Copy failed - please copy manually', true);
+  });
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
