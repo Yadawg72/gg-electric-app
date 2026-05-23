@@ -306,7 +306,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
-  <div class="login-card">
+  <div class="login-card" id="login-card">
     <div class="login-logo">
       <svg width="44" height="44" viewBox="0 0 100 100" fill="none">
         <circle cx="50" cy="50" r="46" stroke="#4A8B8C" stroke-width="7" stroke-dasharray="200 90"/>
@@ -319,19 +319,52 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
         <div class="division">Commercial</div>
       </div>
     </div>
-    <h2>Welcome Back</h2>
-    <p>Sign in to access your job management dashboard</p>
-    <div class="login-field">
-      <label>Email Address</label>
-      <input type="email" id="login-email" placeholder="you@ggelectric.com" autocomplete="email">
+    
+    <!-- LOGIN FORM -->
+    <div id="login-form-section">
+      <h2>Welcome Back</h2>
+      <p>Sign in to access your job management dashboard</p>
+      <div class="login-field">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@ggelectric.com" autocomplete="email">
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')signIn()">
+      </div>
+      <button class="login-btn" id="login-btn" onclick="signIn()">Sign In</button>
+      <div class="login-error" id="login-error"></div>
     </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
-        onkeydown="if(event.key==='Enter')signIn()">
+    
+    <!-- SIGNUP FORM (shown when invited) -->
+    <div id="signup-form-section" style="display:none;">
+      <h2>Complete Your Account</h2>
+      <p>Welcome! Set up your password to get started.</p>
+      <div class="login-field">
+        <label>Email Address</label>
+        <input type="email" id="signup-email" disabled style="background:#f5f5f5;cursor:not-allowed;">
+      </div>
+      <div class="login-field">
+        <label>First Name</label>
+        <input type="text" id="signup-first-name" placeholder="John">
+      </div>
+      <div class="login-field">
+        <label>Last Name</label>
+        <input type="text" id="signup-last-name" placeholder="Doe">
+      </div>
+      <div class="login-field">
+        <label>Create Password</label>
+        <input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password">
+      </div>
+      <div class="login-field">
+        <label>Confirm Password</label>
+        <input type="password" id="signup-confirm-password" placeholder="Re-enter password" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')completeSignup()">
+      </div>
+      <button class="login-btn" onclick="completeSignup()">Create Account</button>
+      <div class="login-error" id="signup-error"></div>
     </div>
-    <button class="login-btn" id="login-btn" onclick="signIn()">Sign In</button>
-    <div class="login-error" id="login-error"></div>
   </div>
 </div>
 
@@ -832,10 +865,69 @@ async function checkSession() {
   await new Promise(r => setTimeout(r, 500));
   
   const { data } = await sb.auth.getSession();
+  
   if (data?.session) { 
-    currentUser = data.session.user; 
-    bootApp(); 
+    const user = data.session.user;
+    
+    // Check if this is a NEW user from an invite (no first_name set yet)
+    if (!user.user_metadata?.first_name) {
+      // Show signup form to complete account
+      showSignupForm(user.email);
+    } else {
+      // Existing user, log them in
+      currentUser = user; 
+      bootApp(); 
+    }
   }
+}
+
+function showSignupForm(email) {
+  document.getElementById('login-form-section').style.display = 'none';
+  document.getElementById('signup-form-section').style.display = 'block';
+  document.getElementById('signup-email').value = email;
+}
+
+async function completeSignup() {
+  const firstName = document.getElementById('signup-first-name').value.trim();
+  const lastName = document.getElementById('signup-last-name').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirmPassword = document.getElementById('signup-confirm-password').value;
+  const errorDiv = document.getElementById('signup-error');
+  
+  errorDiv.textContent = '';
+  
+  if (!firstName || !lastName) {
+    errorDiv.textContent = 'Please enter your first and last name';
+    return;
+  }
+  
+  if (password.length < 8) {
+    errorDiv.textContent = 'Password must be at least 8 characters';
+    return;
+  }
+  
+  if (password !== confirmPassword) {
+    errorDiv.textContent = 'Passwords do not match';
+    return;
+  }
+  
+  // Update user with password and name
+  const { data, error } = await sb.auth.updateUser({
+    password: password,
+    data: {
+      first_name: firstName,
+      last_name: lastName
+    }
+  });
+  
+  if (error) {
+    errorDiv.textContent = 'Error: ' + error.message;
+    return;
+  }
+  
+  // Success - log them in
+  currentUser = data.user;
+  bootApp();
 }
 
 function bootApp() {
@@ -1018,7 +1110,7 @@ async function inviteUser() {
     
     // Invite user with service role
     const { data, error } = await sbAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: 'https://gg-florida0.vercel.app/auth.html',
+      redirectTo: 'https://gg-florida0.vercel.app/',
       data: {
         role: role,
         invited_by: currentUser.email,
