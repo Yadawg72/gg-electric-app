@@ -74,6 +74,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .info-grid input, .info-grid select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);outline:none;transition:border-color .15s;}
 .info-grid input:focus, .info-grid select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(74,139,140,0.1);}
 .info-grid select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;}
+
+/* BILLING */
+#billing-status-badge{display:inline-block;}
 .layout{display:flex;flex:1;overflow:hidden;}
 
 @media(max-width:768px){
@@ -593,6 +596,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           </div>
 
           <div class="panel">
+            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">💳</span><h2>Billing Cycle</h2><span class="panel-chevron">▾</span><span id="billing-status-badge" style="margin-left:auto;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;"></span></div>
+            <div class="panel-body">
+              <div class="info-grid info-grid-2">
+                <div>
+                  <label class="field-label">Billing Frequency</label>
+                  <select id="job-billing-frequency" onchange="updateBillingStatus()">
+                    <option value="end_of_job">End of Job</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label">Last Billed Date</label>
+                  <input type="date" id="job-last-billed-date" onchange="updateBillingStatus()">
+                </div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:16px;" onclick="saveBillingInfo()">Save Billing Info</button>
+            </div>
+          </div>
+
+          <div class="panel">
             <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📝</span><h2>General Notes</h2><span class="panel-chevron">▾</span></div>
             <div class="panel-body"><div class="notes-area"><textarea id="job-notes" placeholder="Add general notes, observations, or anything relevant to this job..." rows="7"></textarea></div></div>
           </div>
@@ -1076,6 +1100,7 @@ async function openJob(id) {
     const bc = s=>({Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}[s]||'pending');
     document.getElementById('job-meta-status').innerHTML = `<span class="badge badge-${bc(job.status)}">${job.status||'—'}</span>`;
     renderInfoGrid(job);
+    loadBillingInfo();
   }
   setLoading(true,'Loading job...');
   await Promise.all([loadTasks(),loadMaterials(),loadInspections(),loadHours(),loadContacts(),loadNotes(),loadPhotos(),loadDocs()]);
@@ -1241,6 +1266,73 @@ async function addRow(type) {
   const { error } = await sb.from(table).insert(data);
   if (error) showToast('Error: '+error.message,true);
   else { await refresh(); const rows=document.querySelectorAll(sel+' tr'); if(rows.length){rows[rows.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});rows[rows.length-1].querySelector('input')?.focus();} }
+}
+
+// ── BILLING ───────────────────────────────────────────────────────────────
+function updateBillingStatus() {
+  const frequency = document.getElementById('job-billing-frequency').value;
+  const lastBilledDate = document.getElementById('job-last-billed-date').value;
+  const badge = document.getElementById('billing-status-badge');
+  
+  if (!lastBilledDate) {
+    badge.textContent = '';
+    return;
+  }
+  
+  const last = new Date(lastBilledDate);
+  const today = new Date();
+  const daysDiff = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+  
+  let isOverdue = false;
+  let statusText = '';
+  
+  if (frequency === 'weekly') {
+    isOverdue = daysDiff >= 7;
+    statusText = isOverdue ? '⚠️ OVERDUE' : '✓ On Track';
+  } else if (frequency === 'monthly') {
+    isOverdue = daysDiff >= 30;
+    statusText = isOverdue ? '⚠️ OVERDUE' : '✓ On Track';
+  } else if (frequency === 'end_of_job') {
+    statusText = '◉ End of Job';
+  }
+  
+  badge.textContent = statusText;
+  badge.style.background = isOverdue ? 'var(--danger-bg)' : 'var(--success-bg)';
+  badge.style.color = isOverdue ? 'var(--danger)' : 'var(--success)';
+}
+
+async function saveBillingInfo() {
+  const frequency = document.getElementById('job-billing-frequency').value;
+  const lastBilledDate = document.getElementById('job-last-billed-date').value;
+  
+  if (!lastBilledDate) {
+    showToast('Please select a last billed date', true);
+    return;
+  }
+  
+  const { error } = await sb.from('jobs').update({
+    billing_frequency: frequency,
+    last_billed_date: lastBilledDate
+  }).eq('id', currentJobId);
+  
+  if (error) {
+    showToast('Error saving billing info: ' + error.message, true);
+  } else {
+    showToast('Billing info saved!');
+    updateBillingStatus();
+  }
+}
+
+function loadBillingInfo() {
+  // Load billing info when viewing a job
+  const job = jobs.find(j => j.id === currentJobId);
+  if (!job) return;
+  
+  document.getElementById('job-billing-frequency').value = job.billing_frequency || 'end_of_job';
+  if (job.last_billed_date) {
+    document.getElementById('job-last-billed-date').value = job.last_billed_date;
+  }
+  updateBillingStatus();
 }
 
 // ── PHOTOS ────────────────────────────────────────────────────────────────
