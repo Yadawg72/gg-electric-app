@@ -12,7 +12,8 @@
   --charcoal:#1c2b2b;--charcoal2:#2d3f3f;--mid:#5a7070;--muted:#8fa8a8;
   --border:#d4e8e8;--border-light:#eaf3f3;--bg:#f7fafa;--white:#ffffff;
   --success:#3a9e6f;--success-bg:#eaf6f0;--warning:#c07a1a;--warning-bg:#fef4e4;
-  --danger:#c0392b;--danger-bg:#fdecea;
+  --danger:#c0392b;--danger-bg:#fdecea;--info:#2980b9;--info-bg:#eaf4fb;
+  --onhand:#7c3aed;--onhand-bg:#f3effe;
   --shadow-sm:0 1px 4px rgba(44,95,96,0.08);--shadow-md:0 4px 16px rgba(44,95,96,0.12);--shadow-lg:0 8px 32px rgba(44,95,96,0.16);
   --radius:8px;--radius-lg:12px;
 }
@@ -55,10 +56,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 @media(max-width:768px){
   .topbar-nav{display:none;}
   .mobile-menu-btn{display:block;}
-  .sidebar{position:fixed;left:0;top:60px;height:calc(100vh-60px);width:236px;z-index:300;background:white;transform:translateX(-100%);transition:transform .3s ease;box-shadow:var(--shadow-lg);}
-  .sidebar.open{transform:translateX(0);}
-  .sidebar-overlay{display:none;position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:250;}
-  .sidebar-overlay.open{display:block;}
 }
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
 .user-chip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:20px;background:var(--teal-ghost);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--teal-dark);}
@@ -71,26 +68,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
 /* SETTINGS */
 .field-label{display:block;font-size:12px;font-weight:600;color:var(--charcoal);margin-bottom:6px;letter-spacing:.5px;}
-.info-grid input, .info-grid select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);outline:none;transition:border-color .15s;}
-.info-grid input:focus, .info-grid select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(74,139,140,0.1);}
-.info-grid select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;}
+.info-grid input,.info-grid select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);outline:none;transition:border-color .15s;}
+.info-grid input:focus,.info-grid select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(74,139,140,0.1);}
+.info-grid select{cursor:pointer;}
 
 /* BILLING */
 #billing-status-badge{display:inline-block;}
 .layout{display:flex;flex:1;overflow:hidden;}
-
-@media(max-width:768px){
-  .layout{flex-direction:column;}
-}
+@media(max-width:768px){.layout{flex-direction:column;}}
 
 /* SIDEBAR */
 .sidebar{width:236px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
 @media(max-width:768px){
-  .sidebar{position:fixed;left:0;top:60px;width:236px;height:calc(100vh-60px);z-index:300;transform:translateX(-100%);transition:transform .3s ease;box-shadow:var(--shadow-lg);}
+  .sidebar{position:fixed;left:0;top:60px;width:236px;height:calc(100vh - 60px);z-index:300;transform:translateX(-100%);transition:transform .3s ease;box-shadow:var(--shadow-lg);}
   .sidebar.open{transform:translateX(0);}
-}
-.sidebar-overlay{display:none;}
-@media(max-width:768px){
   .sidebar-overlay{position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:250;display:none;}
   .sidebar-overlay.open{display:block;}
 }
@@ -120,22 +111,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 /* MAIN */
 .main{flex:1;overflow-y:auto;overflow-x:hidden;}
 .page-header{background:var(--white);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:flex-start;gap:16px;}
-@media(max-width:768px){
-  .page-header{padding:16px 20px;flex-direction:column;}
-}
+@media(max-width:768px){.page-header{padding:16px 20px;flex-direction:column;}}
 .page-header-info{flex:1;}
 .page-header h1{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--charcoal);line-height:1.2;}
-@media(max-width:768px){
-  .page-header h1{font-size:20px;}
-}
 .page-header-meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap;}
 .meta-item{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;}
 .meta-item strong{color:var(--mid);font-weight:500;}
 .page-header-actions{display:flex;gap:10px;align-items:center;}
-@media(max-width:768px){
-  .page-header-actions{width:100%;flex-direction:column;}
-  .page-header-actions .btn{width:100%;}
-}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px;}
@@ -146,6 +128,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .badge-needed{background:var(--danger-bg);color:var(--danger);}
 .badge-ordered{background:var(--warning-bg);color:var(--warning);}
 .badge-received{background:var(--success-bg);color:var(--success);}
+.badge-onhand{background:var(--onhand-bg);color:var(--onhand);}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;}
@@ -154,23 +137,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .btn-ghost{background:none;color:var(--mid);border:1px solid var(--border);}
 .btn-ghost:hover{background:var(--bg);}
 .btn-sm{padding:5px 12px;font-size:12px;}
-@media(max-width:768px){
-  .btn{padding:10px 16px;font-size:14px;min-height:44px;}
-  .btn-sm{padding:8px 12px;font-size:13px;min-height:40px;}
-}
 
 /* CONTENT */
 .content{padding:24px 32px;}
-@media(max-width:768px){
-  .content{padding:16px 16px;}
-}
+@media(max-width:768px){.content{padding:16px;}}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
-@media(max-width:1024px){
-  .stats-grid{grid-template-columns:repeat(2,1fr);}
-}
-@media(max-width:768px){
-  .stats-grid{grid-template-columns:1fr;}
-}
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.stats-grid{grid-template-columns:1fr;}}
 .stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
 .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal-light);border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
 .stat-card.accent-success::after{background:var(--success);}
@@ -194,9 +167,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 /* INFO GRID */
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-light);}
 .info-grid-3{grid-template-columns:1fr 1fr 1fr;}
-@media(max-width:768px){
-  .info-grid, .info-grid-3{grid-template-columns:1fr;}
-}
+@media(max-width:768px){.info-grid,.info-grid-3{grid-template-columns:1fr;}}
 .info-field{background:var(--white);padding:14px 18px;}
 .info-field label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
 .info-field input,.info-field select{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;padding:3px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--charcoal);outline:none;transition:border-color .15s;}
@@ -230,11 +201,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .jobs-table td{padding:12px 16px;font-size:13px;}
 .job-name-cell{font-weight:600;color:var(--teal-dark);display:flex;align-items:center;gap:8px;}
 .job-num-cell{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
-@media(max-width:768px){
-  .jobs-table{min-width:100%;}
-  .jobs-table thead th{font-size:9px;padding:8px 10px;}
-  .jobs-table td{padding:10px;font-size:12px;}
-}
 
 /* FILTER BAR */
 .filter-bar{padding:14px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg);}
@@ -260,7 +226,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .photo-meta select,.photo-meta input{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:white;outline:none;transition:border-color .15s;}
 .photo-meta select:focus,.photo-meta input:focus{border-color:var(--teal);}
 .photo-grid{padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
-.photo-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white;box-shadow:var(--shadow-sm);transition:box-shadow .15s;animation:fadeUp .25s ease;}
+.photo-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white;box-shadow:var(--shadow-sm);transition:box-shadow .15s;}
 .photo-card:hover{box-shadow:var(--shadow-md);}
 .photo-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;cursor:pointer;}
 .photo-info{padding:8px 10px;}
@@ -273,7 +239,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(28,43,43,0.5);z-index:500;display:none;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
-.modal{background:white;border-radius:var(--radius-lg);padding:28px;width:480px;max-width:95vw;box-shadow:var(--shadow-lg);animation:fadeUp .2s ease;}
+.modal{background:white;border-radius:var(--radius-lg);padding:28px;width:480px;max-width:95vw;box-shadow:var(--shadow-lg);animation:fadeUp .2s ease;max-height:90vh;overflow-y:auto;}
 .modal h2{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--charcoal);margin-bottom:20px;}
 .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
 .modal-field{display:flex;flex-direction:column;gap:5px;}
@@ -294,30 +260,44 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .toast.show{transform:none;opacity:1;}
 .toast.terror{background:var(--danger);}
 
-  .dash-qf-btn {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--mid);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
-}
-.dash-qf-btn:hover {
-  background: var(--teal-pale);
-  border-color: var(--teal);
-  color: var(--teal-dark);
-}
-.dash-qf-btn.active {
-  background: var(--teal);
-  border-color: var(--teal);
-  color: white;
-  font-weight: 600;
-}
+/* DASHBOARD QUICK FILTERS */
+.dash-qf-btn{background:var(--bg);border:1px solid var(--border);color:var(--mid);padding:5px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.dash-qf-btn:hover{background:var(--teal-pale);border-color:var(--teal);color:var(--teal-dark);}
+.dash-qf-btn.active{background:var(--teal);border-color:var(--teal);color:white;font-weight:600;}
+
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
+.cal-dow{text-align:center;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);padding:4px 0;text-transform:uppercase;}
+.cal-day{min-height:64px;background:var(--bg);border-radius:var(--radius);padding:5px 6px;cursor:default;transition:background .12s;border:1px solid transparent;position:relative;}
+.cal-day.has-events{cursor:pointer;}
+.cal-day.has-events:hover{background:var(--teal-pale);border-color:var(--border);}
+.cal-day.today{background:var(--teal-pale);border-color:var(--teal);}
+.cal-day.other-month{opacity:.35;}
+.cal-day.has-events:hover .cal-day-popup{display:block;}
+.cal-day-num{font-size:11px;font-weight:600;color:var(--charcoal);margin-bottom:4px;}
+.cal-day.today .cal-day-num{color:var(--teal-dark);}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;}
+.cal-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-start{background:#3a9e6f;}
+.dot-end{background:#c0392b;}
+.dot-insp{background:#2980b9;}
+.dot-billing{background:#c07a1a;}
+.cal-day-popup{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:400;background:white;border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);min-width:220px;max-width:280px;padding:10px 12px;}
+.cal-day-popup h4{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.cal-event{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;cursor:pointer;padding:4px 6px;border-radius:4px;transition:background .1s;}
+.cal-event:hover{background:var(--teal-ghost);}
+.cal-event-dot{width:8px;height:8px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+.cal-event-info{flex:1;min-width:0;}
+.cal-event-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.cal-event-name{font-size:12px;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-nav-btn{background:none;border:1px solid var(--border);color:var(--mid);width:28px;height:28px;border-radius:var(--radius);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cal-nav-btn:hover{background:var(--teal-pale);border-color:var(--teal);color:var(--teal);}
+.cal-month-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--charcoal);}
+.cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border-light);}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mid);}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 @keyframes spin{to{transform:rotate(360deg);}}
 ::-webkit-scrollbar{width:5px;height:5px;}
@@ -330,7 +310,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
-  <div class="login-card" id="login-card">
+  <div class="login-card">
     <div class="login-logo">
       <svg width="44" height="44" viewBox="0 0 100 100" fill="none">
         <circle cx="50" cy="50" r="46" stroke="#4A8B8C" stroke-width="7" stroke-dasharray="200 90"/>
@@ -343,8 +323,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
         <div class="division">Commercial</div>
       </div>
     </div>
-    
-    <!-- LOGIN FORM -->
     <div id="login-form-section">
       <h2>Welcome Back</h2>
       <p>Sign in to access your job management dashboard</p>
@@ -354,38 +332,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
       </div>
       <div class="login-field">
         <label>Password</label>
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')signIn()">
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
       </div>
       <button class="login-btn" id="login-btn" onclick="signIn()">Sign In</button>
       <div class="login-error" id="login-error"></div>
     </div>
-    
-    <!-- SIGNUP FORM (shown when invited) -->
     <div id="signup-form-section" style="display:none;">
       <h2>Complete Your Account</h2>
       <p>Welcome! Set up your password to get started.</p>
-      <div class="login-field">
-        <label>Email Address</label>
-        <input type="email" id="signup-email" disabled style="background:#f5f5f5;cursor:not-allowed;">
-      </div>
-      <div class="login-field">
-        <label>First Name</label>
-        <input type="text" id="signup-first-name" placeholder="John">
-      </div>
-      <div class="login-field">
-        <label>Last Name</label>
-        <input type="text" id="signup-last-name" placeholder="Doe">
-      </div>
-      <div class="login-field">
-        <label>Create Password</label>
-        <input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password">
-      </div>
-      <div class="login-field">
-        <label>Confirm Password</label>
-        <input type="password" id="signup-confirm-password" placeholder="Re-enter password" autocomplete="new-password"
-          onkeydown="if(event.key==='Enter')completeSignup()">
-      </div>
+      <div class="login-field"><label>Email Address</label><input type="email" id="signup-email" disabled style="background:#f5f5f5;cursor:not-allowed;"></div>
+      <div class="login-field"><label>First Name</label><input type="text" id="signup-first-name" placeholder="John"></div>
+      <div class="login-field"><label>Last Name</label><input type="text" id="signup-last-name" placeholder="Doe"></div>
+      <div class="login-field"><label>Create Password</label><input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password"></div>
+      <div class="login-field"><label>Confirm Password</label><input type="password" id="signup-confirm-password" placeholder="Re-enter password" autocomplete="new-password" onkeydown="if(event.key==='Enter')completeSignup()"></div>
       <button class="login-btn" onclick="completeSignup()">Create Account</button>
       <div class="login-error" id="signup-error"></div>
     </div>
@@ -439,7 +398,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
     <div class="main">
 
-     <!-- DASHBOARD -->
+      <!-- DASHBOARD -->
       <div id="view-dashboard">
         <div class="page-header">
           <div class="page-header-info">
@@ -460,11 +419,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
             <div class="stat-card"><div class="stat-label">Complete</div><div class="stat-value" id="s-done">—</div><div class="stat-sub">finished</div></div>
           </div>
 
+          <!-- CALENDAR -->
+          <div class="panel" id="cal-panel">
+            <div class="panel-head" onclick="togglePanel(this.parentElement)">
+              <span class="panel-icon">📅</span>
+              <h2>Job Calendar</h2>
+              <div style="margin-left:auto;margin-right:8px;" onclick="event.stopPropagation()">
+                <span id="cal-event-count" style="background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;"></span>
+              </div>
+              <span class="panel-chevron">▾</span>
+            </div>
+            <div class="panel-body" style="padding:20px 24px;">
+              <div class="cal-nav">
+                <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+                <div class="cal-month-title" id="cal-title"></div>
+                <button class="cal-nav-btn" onclick="calNext()">›</button>
+              </div>
+              <div class="cal-header">
+                <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
+                <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+              </div>
+              <div class="cal-grid" id="cal-grid"></div>
+              <div class="cal-legend">
+                <div class="cal-legend-item"><span class="cal-dot dot-start"></span> Job Start</div>
+                <div class="cal-legend-item"><span class="cal-dot dot-end"></span> Job End</div>
+                <div class="cal-legend-item"><span class="cal-dot dot-insp"></span> Inspection</div>
+                <div class="cal-legend-item"><span class="cal-dot dot-billing"></span> Billing Due</div>
+              </div>
+            </div>
+          </div>
+
           <!-- FILTER BAR -->
           <div class="panel" style="margin-bottom:20px;">
             <div class="panel-body" style="padding:16px 20px;">
-
-              <!-- Row 1: Search + Status + Builder + Sort -->
               <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
                 <div style="flex:2;min-width:180px;">
                   <label style="display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Search</label>
@@ -505,21 +492,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
                   <button onclick="clearDashFilters()" class="btn btn-ghost btn-sm" style="white-space:nowrap;">✕ Clear</button>
                 </div>
               </div>
-
-              <!-- Row 2: Quick filter badges -->
               <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                 <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-right:4px;">Quick:</span>
-                <button id="qf-billing" onclick="toggleQuickFilter('billing')" class="dash-qf-btn">⚠️ Overdue Billing</button>
-                <button id="qf-tasks" onclick="toggleQuickFilter('tasks')" class="dash-qf-btn">📋 Open Tasks</button>
+                <button id="qf-billing"   onclick="toggleQuickFilter('billing')"   class="dash-qf-btn">⚠️ Overdue Billing</button>
+                <button id="qf-tasks"     onclick="toggleQuickFilter('tasks')"     class="dash-qf-btn">📋 Open Tasks</button>
                 <button id="qf-materials" onclick="toggleQuickFilter('materials')" class="dash-qf-btn">🔧 Materials Needed</button>
-                <button id="qf-starting" onclick="toggleQuickFilter('starting')" class="dash-qf-btn">🚀 Starting This Week</button>
-                <button id="qf-ending" onclick="toggleQuickFilter('ending')" class="dash-qf-btn">🏁 Ending This Month</button>
+                <button id="qf-starting"  onclick="toggleQuickFilter('starting')"  class="dash-qf-btn">🚀 Starting This Week</button>
+                <button id="qf-ending"    onclick="toggleQuickFilter('ending')"    class="dash-qf-btn">🏁 Ending This Month</button>
               </div>
-
             </div>
           </div>
 
-          <!-- RESULTS COUNT -->
           <div id="dash-result-count" style="font-size:12px;color:var(--muted);margin-bottom:10px;margin-left:2px;"></div>
 
           <!-- JOBS TABLE -->
@@ -540,7 +523,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -568,7 +550,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
                 <label>Status:</label>
                 <select id="mat-filter" onchange="renderMatsView()">
                   <option value="all">All</option><option value="Needed">Needed</option>
-                  <option value="Ordered">Ordered</option><option value="Partially Received">Partially Received</option><option value="Received">Received</option>
+                  <option value="On Hand">On Hand</option><option value="Ordered">Ordered</option>
+                  <option value="Partially Received">Partially Received</option><option value="Received">Received</option>
                 </select>
                 <label style="margin-left:10px">Job:</label>
                 <select id="mat-job-filter" onchange="renderMatsView()"><option value="all">All Jobs</option></select>
@@ -633,7 +616,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
                   <th style="width:85px">Qty Ordered</th><th style="width:120px">Supplier</th>
                   <th style="width:105px">PO Number</th><th style="width:105px">Invoice #</th>
                   <th style="width:90px">Est. Cost</th><th style="width:90px">Actual Cost</th>
-                  <th style="width:110px">Delivery Date</th><th style="width:125px">Status</th><th style="width:32px"></th>
+                  <th style="width:110px">Delivery Date</th><th style="width:135px">Status</th><th style="width:32px"></th>
                 </tr></thead>
                 <tbody id="mat-tbody"></tbody>
                 <tfoot><tr class="total-row">
@@ -722,36 +705,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           <div class="panel">
             <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📋</span><h2>Daily Field Reports</h2><span class="panel-chevron">▾</span><span id="reports-count-badge" style="margin-left:auto;background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;"></span></div>
             <div class="panel-body">
-              
-              <!-- Add New Report Button -->
               <button class="btn btn-primary" onclick="openDailyReportModal()" style="margin-bottom:20px;">+ Add Daily Report</button>
-              
-              <!-- Reports List -->
               <div id="daily-reports-list" style="display:flex;flex-direction:column;gap:12px;">
                 <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No daily reports yet</div>
               </div>
-              
             </div>
           </div>
 
           <div class="panel">
             <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">💳</span><h2>Billing Cycle</h2><span class="panel-chevron">▾</span><span id="billing-status-badge" style="margin-left:auto;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;"></span></div>
             <div class="panel-body">
-              <div class="info-grid info-grid-2">
-                <div>
+              <div class="info-grid" style="grid-template-columns:1fr 1fr;">
+                <div style="background:var(--white);padding:14px 18px;">
                   <label class="field-label">Billing Frequency</label>
-                  <select id="job-billing-frequency" onchange="updateBillingStatus()">
+                  <select id="job-billing-frequency" onchange="updateBillingStatus()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
                     <option value="end_of_job">End of Job</option>
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                   </select>
                 </div>
-                <div>
+                <div style="background:var(--white);padding:14px 18px;">
                   <label class="field-label">Last Billed Date</label>
-                  <input type="date" id="job-last-billed-date" onchange="updateBillingStatus()">
+                  <input type="date" id="job-last-billed-date" onchange="updateBillingStatus()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
                 </div>
               </div>
-              <button class="btn btn-primary" style="margin-top:16px;" onclick="saveBillingInfo()">Save Billing Info</button>
+              <div style="padding:14px 18px;">
+                <button class="btn btn-primary" onclick="saveBillingInfo()">Save Billing Info</button>
+              </div>
             </div>
           </div>
 
@@ -766,117 +746,56 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
       <!-- SETTINGS -->
       <div id="view-settings" style="display:none">
         <div class="page-header">
-          <div class="page-header-info">
-            <h1>Settings</h1>
-            <div class="page-header-meta">
-              <span class="meta-item">Manage your account and preferences</span>
-            </div>
-          </div>
+          <div class="page-header-info"><h1>Settings</h1><div class="page-header-meta"><span class="meta-item">Manage your account and preferences</span></div></div>
         </div>
         <div class="content">
-
           <div class="panel">
             <div class="panel-head"><span class="panel-icon">👤</span><h2>Profile Information</h2></div>
             <div class="panel-body">
-              <div class="info-grid info-grid-2">
-                <div>
-                  <label class="field-label">First Name</label>
-                  <input type="text" id="settings-first-name" placeholder="First name">
-                </div>
-                <div>
-                  <label class="field-label">Last Name</label>
-                  <input type="text" id="settings-last-name" placeholder="Last name">
-                </div>
-                <div>
-                  <label class="field-label">Email</label>
-                  <input type="email" id="settings-email" placeholder="Email" disabled style="background:var(--bg);cursor:not-allowed;">
-                </div>
-                <div>
-                  <label class="field-label">Role</label>
-                  <select id="settings-role">
-                    <option value="Admin">Admin</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Staff">Staff</option>
-                    <option value="Viewer">Viewer</option>
-                  </select>
-                </div>
+              <div class="info-grid" style="grid-template-columns:1fr 1fr;">
+                <div style="background:var(--white);padding:14px 18px;"><label class="field-label">First Name</label><input type="text" id="settings-first-name" placeholder="First name" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+                <div style="background:var(--white);padding:14px 18px;"><label class="field-label">Last Name</label><input type="text" id="settings-last-name" placeholder="Last name" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+                <div style="background:var(--white);padding:14px 18px;"><label class="field-label">Email</label><input type="email" id="settings-email" disabled style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);cursor:not-allowed;"></div>
+                <div style="background:var(--white);padding:14px 18px;"><label class="field-label">Role</label><select id="settings-role" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"><option value="Admin">Admin</option><option value="Manager">Manager</option><option value="Staff">Staff</option><option value="Viewer">Viewer</option></select></div>
               </div>
-              <button class="btn btn-primary" style="margin-top:16px;" onclick="saveSettings()">Save Changes</button>
+              <div style="padding:14px 18px;"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div>
             </div>
           </div>
-
           <div class="panel">
             <div class="panel-head"><span class="panel-icon">🔑</span><h2>Change Password</h2></div>
-            <div class="panel-body">
+            <div class="panel-body" style="padding:20px;">
               <div style="max-width:400px;">
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">Current Password</label>
-                  <input type="password" id="settings-old-password" placeholder="Your current password">
-                </div>
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">New Password</label>
-                  <input type="password" id="settings-new-password" placeholder="Enter new password">
-                </div>
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">Confirm New Password</label>
-                  <input type="password" id="settings-confirm-password" placeholder="Confirm new password">
-                </div>
+                <div style="margin-bottom:16px;"><label class="field-label">Current Password</label><input type="password" id="settings-old-password" placeholder="Your current password" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+                <div style="margin-bottom:16px;"><label class="field-label">New Password</label><input type="password" id="settings-new-password" placeholder="Enter new password" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+                <div style="margin-bottom:16px;"><label class="field-label">Confirm New Password</label><input type="password" id="settings-confirm-password" placeholder="Confirm new password" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
                 <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
               </div>
             </div>
           </div>
-
           <div class="panel">
             <div class="panel-head"><span class="panel-icon">👥</span><h2>Create New User</h2></div>
-            <div class="panel-body">
+            <div class="panel-body" style="padding:20px;">
               <div style="max-width:500px;">
-                <div style="padding:12px;background:var(--teal-pale);border-radius:var(--radius);margin-bottom:16px;font-size:12px;color:var(--teal-dark);">
-                  <strong>How it works:</strong> Create the user's account here, then share the email and temporary password with them. They can log in immediately and change their password from Settings.
-                </div>
-                
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">First Name</label>
-                  <input type="text" id="new-user-first-name" placeholder="John" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
-                </div>
-                
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">Last Name</label>
-                  <input type="text" id="new-user-last-name" placeholder="Doe" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
-                </div>
-                
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">Email Address</label>
-                  <input type="email" id="new-user-email" placeholder="user@example.com" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
-                </div>
-                
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">Temporary Password</label>
+                <div style="padding:12px;background:var(--teal-pale);border-radius:var(--radius);margin-bottom:16px;font-size:12px;color:var(--teal-dark);"><strong>How it works:</strong> Create the user's account here, then share the email and temporary password with them.</div>
+                <div style="margin-bottom:16px;"><label class="field-label">First Name</label><input type="text" id="new-user-first-name" placeholder="John" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+                <div style="margin-bottom:16px;"><label class="field-label">Last Name</label><input type="text" id="new-user-last-name" placeholder="Doe" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+                <div style="margin-bottom:16px;"><label class="field-label">Email Address</label><input type="email" id="new-user-email" placeholder="user@example.com" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;"></div>
+                <div style="margin-bottom:16px;"><label class="field-label">Temporary Password</label>
                   <div style="display:flex;gap:8px;">
                     <input type="text" id="new-user-password" placeholder="Click Generate or type a password" style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:13px;">
                     <button type="button" class="btn btn-ghost btn-sm" onclick="generatePassword()">Generate</button>
                   </div>
-                  <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block;">User can change this after logging in</small>
                 </div>
-                
-                <div style="margin-bottom:16px;">
-                  <label class="field-label">Role</label>
-                  <select id="new-user-role" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);cursor:pointer;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a8b8c' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;">
+                <div style="margin-bottom:16px;"><label class="field-label">Role</label>
+                  <select id="new-user-role" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">
                     <option value="Field">Field (View Only)</option>
                     <option value="Admin">Admin (Full Edit Access)</option>
                   </select>
                 </div>
-                
-                <div style="padding:12px;background:var(--bg);border-radius:var(--radius);margin-bottom:16px;font-size:12px;color:var(--mid);">
-                  <strong style="color:var(--charcoal);">Admin:</strong> Can create/edit all jobs, materials, and team information<br>
-                  <strong style="color:var(--charcoal);">Field:</strong> Can view jobs and materials but cannot edit
-                </div>
-                
                 <button class="btn btn-primary" onclick="createNewUser()">Create User Account</button>
               </div>
-              
               <div id="new-user-success" style="display:none;margin-top:20px;padding:16px;background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius);max-width:500px;">
                 <h3 style="color:var(--success);font-size:14px;font-weight:600;margin-bottom:8px;">✓ Account Created Successfully!</h3>
-                <p style="font-size:12px;color:var(--charcoal);margin-bottom:12px;">Share these credentials with the user:</p>
                 <div style="background:white;padding:12px;border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;">
                   <div><strong>Email:</strong> <span id="created-email"></span></div>
                   <div style="margin-top:6px;"><strong>Password:</strong> <span id="created-password"></span></div>
@@ -885,7 +804,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -924,9 +842,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
       <div class="modal-field"><label>Hours Worked</label><input type="number" id="dr-hours" placeholder="8" step="0.25" min="0"></div>
       <div class="modal-field"><label>Overtime?</label><select id="dr-overtime"><option value="false">No</option><option value="true">Yes</option></select></div>
       <div class="modal-field full"><label>Work Completed</label><textarea id="dr-work" placeholder="Describe the work accomplished today..." rows="3" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;"></textarea></div>
-      <div class="modal-field full"><label>Materials Used</label><textarea id="dr-materials-used" placeholder="List materials used today (one per line)&#10;Example:&#10;100 ft - 12-2 Romex wire&#10;5 - 20A breakers&#10;2 boxes - 4&quot; square boxes" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;"></textarea></div>
+      <div class="modal-field full"><label>Materials Used</label><textarea id="dr-materials-used" placeholder="List materials used today (one per line)" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;"></textarea></div>
       <div class="modal-field full"><label>Materials Needed</label><textarea id="dr-materials-needed" placeholder="List materials needed for tomorrow/next visit (one per line)" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;"></textarea></div>
-      <div class="modal-field full"><label>Upload Report Photo (Optional)</label><input type="file" id="dr-photo" accept="image/*" style="padding:8px;font-size:13px;"><small style="color:var(--muted);font-size:11px;">Take a photo of the handwritten report if needed</small></div>
+      <div class="modal-field full"><label>Upload Report Photo (Optional)</label><input type="file" id="dr-photo" accept="image/*" style="padding:8px;font-size:13px;"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-daily-report')">Cancel</button>
@@ -958,36 +876,21 @@ const sb = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaGh0b3NocG1mY3JlYXdtZnZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NjA3OTksImV4cCI6MjA5NDAzNjc5OX0.jREgZEdn8f5pVFJO-50Y1AYQoGtiy618dQw_S7kmsdw'
 );
 
-// Handle Supabase auth redirects (password reset, signup confirmation, etc)
-// This runs BEFORE checking the session to ensure tokens are processed
 (async () => {
-  // Listen for auth state changes from URL fragments
-  const { data: { session } } = await sb.auth.getSession();
-  
-  if (session) {
-    currentUser = session.user;
-    bootApp();
-  } else {
-    // Check periodically for session to be established from URL redirect
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session) { currentUser = session.user; bootApp(); }
+  else {
     let attempts = 0;
-    const checkInterval = setInterval(async () => {
-      const { data: { session: newSession } } = await sb.auth.getSession();
-      if (newSession) {
-        currentUser = newSession.user;
-        bootApp();
-        clearInterval(checkInterval);
-      }
-      attempts++;
-      if (attempts > 50) clearInterval(checkInterval); // Stop after 5 seconds
+    const chk = setInterval(async () => {
+      const { data:{ session: s } } = await sb.auth.getSession();
+      if (s) { currentUser = s.user; bootApp(); clearInterval(chk); }
+      if (++attempts > 50) clearInterval(chk);
     }, 100);
   }
 })();
 
 sb.auth.onAuthStateChange((event, session) => {
-  if (session && !currentUser) {
-    currentUser = session.user;
-    bootApp();
-  }
+  if (session && !currentUser) { currentUser = session.user; bootApp(); }
 });
 
 // ── STATE ─────────────────────────────────────────────────────────────────
@@ -1009,8 +912,7 @@ async function signIn() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   btn.disabled = false; btn.textContent = 'Sign In';
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
-  currentUser = data.user;
-  bootApp();
+  currentUser = data.user; bootApp();
 }
 
 async function signOut() {
@@ -1021,32 +923,17 @@ async function signOut() {
 }
 
 function toggleMobileMenu() {
-  const sidebar = document.querySelector('.sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  if (sidebar && overlay) {
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('open');
-  }
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
 }
 
 async function checkSession() {
-  // Give Supabase time to process any redirect tokens from URL
   await new Promise(r => setTimeout(r, 500));
-  
   const { data } = await sb.auth.getSession();
-  
-  if (data?.session) { 
+  if (data?.session) {
     const user = data.session.user;
-    
-    // Check if this is a NEW user from an invite (no first_name set yet)
-    if (!user.user_metadata?.first_name) {
-      // Show signup form to complete account
-      showSignupForm(user.email);
-    } else {
-      // Existing user, log them in
-      currentUser = user; 
-      bootApp(); 
-    }
+    if (!user.user_metadata?.first_name) showSignupForm(user.email);
+    else { currentUser = user; bootApp(); }
   }
 }
 
@@ -1058,45 +945,17 @@ function showSignupForm(email) {
 
 async function completeSignup() {
   const firstName = document.getElementById('signup-first-name').value.trim();
-  const lastName = document.getElementById('signup-last-name').value.trim();
-  const password = document.getElementById('signup-password').value;
-  const confirmPassword = document.getElementById('signup-confirm-password').value;
-  const errorDiv = document.getElementById('signup-error');
-  
-  errorDiv.textContent = '';
-  
-  if (!firstName || !lastName) {
-    errorDiv.textContent = 'Please enter your first and last name';
-    return;
-  }
-  
-  if (password.length < 8) {
-    errorDiv.textContent = 'Password must be at least 8 characters';
-    return;
-  }
-  
-  if (password !== confirmPassword) {
-    errorDiv.textContent = 'Passwords do not match';
-    return;
-  }
-  
-  // Update user with password and name
-  const { data, error } = await sb.auth.updateUser({
-    password: password,
-    data: {
-      first_name: firstName,
-      last_name: lastName
-    }
-  });
-  
-  if (error) {
-    errorDiv.textContent = 'Error: ' + error.message;
-    return;
-  }
-  
-  // Success - log them in
-  currentUser = data.user;
-  bootApp();
+  const lastName  = document.getElementById('signup-last-name').value.trim();
+  const password  = document.getElementById('signup-password').value;
+  const confirm   = document.getElementById('signup-confirm-password').value;
+  const errDiv    = document.getElementById('signup-error');
+  errDiv.textContent = '';
+  if (!firstName || !lastName) { errDiv.textContent = 'Please enter your first and last name'; return; }
+  if (password.length < 8)     { errDiv.textContent = 'Password must be at least 8 characters'; return; }
+  if (password !== confirm)    { errDiv.textContent = 'Passwords do not match'; return; }
+  const { data, error } = await sb.auth.updateUser({ password, data:{ first_name:firstName, last_name:lastName } });
+  if (error) { errDiv.textContent = 'Error: ' + error.message; return; }
+  currentUser = data.user; bootApp();
 }
 
 function bootApp() {
@@ -1145,20 +1004,15 @@ function showView(v) {
   });
   if (v==='materials') loadAllMats();
   if (v==='dashboard') renderDashboard();
-  if (v==='settings') renderSettings();
-  // Close mobile menu
-  const sidebar = document.querySelector('.sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  if (sidebar && overlay) {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('open');
-  }
+  if (v==='settings')  renderSettings();
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────
 function renderSidebar(q='') {
   const f = jobs.filter(j=>(j.job_name||'').toLowerCase().includes(q.toLowerCase())||(j.job_number||'').toLowerCase().includes(q.toLowerCase()));
-  const pipClass = s => { const m={Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}; return 'pip-'+(m[s]||'pending'); };
+  const pipClass = s => ({Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}[s]||'pending');
   document.getElementById('sidebar-list').innerHTML = f.map(j=>`
     <div class="job-item ${j.id===currentJobId?'active':''}" onclick="openJob('${j.id}')">
       <div class="job-item-icon">${j.status==='Complete'?'✓':'🏗'}</div>
@@ -1166,19 +1020,199 @@ function renderSidebar(q='') {
         <div class="job-item-name">${j.job_name||'Unnamed'}</div>
         <div class="job-item-num">${j.job_number||'—'}</div>
       </div>
-      <span class="status-pip ${pipClass(j.status)}"></span>
+      <span class="status-pip pip-${pipClass(j.status)}"></span>
     </div>`).join('') || '<div style="padding:16px;font-size:12px;color:var(--muted);text-align:center">No jobs found</div>';
 }
 
-// ── SETTINGS ───────────────────────────────────────────────────────────────
+// ── CALENDAR ──────────────────────────────────────────────────────────────
+let calYear   = new Date().getFullYear();
+let calMonth  = new Date().getMonth();
+let calEvents = [];
+
+async function loadCalendarEvents() {
+  calEvents = [];
+  for (const j of jobs) {
+    const name = j.job_name || 'Unnamed';
+    if (j.start_date) calEvents.push({ date:j.start_date, type:'start', jobId:j.id, jobName:name, label:'Job Start' });
+    if (j.end_date)   calEvents.push({ date:j.end_date,   type:'end',   jobId:j.id, jobName:name, label:'Job End' });
+    if (j.billing_frequency && j.billing_frequency !== 'end_of_job' && j.last_billed_date) {
+      const last = new Date(j.last_billed_date);
+      const days = j.billing_frequency === 'weekly' ? 7 : 30;
+      const due  = new Date(last); due.setDate(due.getDate() + days);
+      calEvents.push({ date:due.toISOString().split('T')[0], type:'billing', jobId:j.id, jobName:name, label:'Billing Due' });
+    }
+  }
+  if (jobs.length > 0) {
+    const { data:insps } = await sb.from('inspections')
+      .select('scheduled_date,item,job_id')
+      .in('job_id', jobs.map(j=>j.id))
+      .not('scheduled_date','is',null);
+    for (const insp of insps||[]) {
+      const job = jobs.find(j=>j.id===insp.job_id);
+      calEvents.push({ date:insp.scheduled_date, type:'insp', jobId:insp.job_id, jobName:job?.job_name||'Unknown', label:insp.item||'Inspection' });
+    }
+  }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const titleEl = document.getElementById('cal-title');
+  const gridEl  = document.getElementById('cal-grid');
+  if (!titleEl || !gridEl) return;
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  titleEl.textContent = `${months[calMonth]} ${calYear}`;
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cells = [];
+  for (let i=firstDay-1;i>=0;i--) cells.push({day:daysInPrev-i,month:calMonth-1,year:calYear,other:true});
+  for (let d=1;d<=daysInMonth;d++) cells.push({day:d,month:calMonth,year:calYear,other:false});
+  let next=1; while(cells.length%7!==0) cells.push({day:next++,month:calMonth+1,year:calYear,other:true});
+  const dotMap = { start:'dot-start', end:'dot-end', insp:'dot-insp', billing:'dot-billing' };
+  gridEl.innerHTML = cells.map(cell => {
+    const dateStr = `${cell.year}-${String(cell.month+1).padStart(2,'0')}-${String(cell.day).padStart(2,'0')}`;
+    const isToday = !cell.other && new Date(cell.year,cell.month,cell.day).getTime()===today.getTime();
+    const events  = cell.other ? [] : calEvents.filter(e=>e.date===dateStr);
+    const dots    = events.map(e=>`<span class="cal-dot ${dotMap[e.type]||''}"></span>`).join('');
+    const popup   = events.length ? `<div class="cal-day-popup"><h4>${months[cell.month<0?11:cell.month>11?0:cell.month]} ${cell.day}</h4>${
+      events.map(e=>`<div class="cal-event" onclick="openJob('${e.jobId}');event.stopPropagation()">
+        <span class="cal-event-dot ${dotMap[e.type]||''}"></span>
+        <div class="cal-event-info"><div class="cal-event-label">${e.label}</div><div class="cal-event-name">${e.jobName}</div></div>
+      </div>`).join('')}</div>` : '';
+    return `<div class="cal-day ${isToday?'today':''} ${cell.other?'other-month':''} ${events.length?'has-events':''}">
+      <div class="cal-day-num">${cell.day}</div>
+      <div class="cal-dots">${dots}</div>${popup}</div>`;
+  }).join('');
+  const thisMonthCount = calEvents.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getFullYear()===calYear&&d.getMonth()===calMonth;}).length;
+  const badge = document.getElementById('cal-event-count');
+  if (badge) badge.textContent = thisMonthCount > 0 ? `${thisMonthCount} this month` : '';
+}
+
+function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+let dashQuickFilters = { billing:false, tasks:false, materials:false, starting:false, ending:false };
+let dashTaskCounts   = {};
+let dashMatCounts    = {};
+
+function renderDashboard() {
+  document.getElementById('s-total').textContent  = jobs.length;
+  document.getElementById('s-active').textContent = jobs.filter(j=>j.status==='Active').length;
+  document.getElementById('s-hold').textContent   = jobs.filter(j=>j.status==='On Hold').length;
+  document.getElementById('s-done').textContent   = jobs.filter(j=>j.status==='Complete').length;
+  populateBuilderFilter();
+  loadDashboardCounts().then(()=>applyDashFilters());
+  loadCalendarEvents();
+}
+
+function populateBuilderFilter() {
+  const sel = document.getElementById('dash-builder');
+  if (!sel) return;
+  const cur = sel.value;
+  const builders = [...new Set(jobs.map(j=>j.builder).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">All Builders</option>' + builders.map(b=>`<option value="${b}" ${cur===b?'selected':''}>${b}</option>`).join('');
+}
+
+async function loadDashboardCounts() {
+  dashTaskCounts = {}; dashMatCounts = {};
+  for (const j of jobs) {
+    const [t,m] = await Promise.all([
+      sb.from('tasks').select('id,status').eq('job_id',j.id),
+      sb.from('materials').select('id,status').eq('job_id',j.id),
+    ]);
+    dashTaskCounts[j.id] = (t.data||[]).filter(r=>r.status!=='Complete').length;
+    dashMatCounts[j.id]  = (m.data||[]).filter(r=>r.status==='Needed').length;
+  }
+}
+
+function applyDashFilters() {
+  const search  = (document.getElementById('dash-search')?.value||'').toLowerCase().trim();
+  const status  = document.getElementById('dash-status')?.value  || 'all';
+  const builder = document.getElementById('dash-builder')?.value || 'all';
+  const sortVal = document.getElementById('dash-sort')?.value    || 'created_desc';
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const weekEnd = new Date(today); weekEnd.setDate(today.getDate()+7);
+  const monthEnd= new Date(today.getFullYear(),today.getMonth()+1,0);
+
+  let filtered = jobs.filter(j=>{
+    if (search && !`${j.job_name||''} ${j.job_number||''} ${j.builder||''}`.toLowerCase().includes(search)) return false;
+    if (status!=='all' && j.status!==status) return false;
+    if (builder!=='all' && j.builder!==builder) return false;
+    if (dashQuickFilters.billing) {
+      if (!j.billing_frequency||j.billing_frequency==='end_of_job'||!j.last_billed_date) return false;
+      const last=new Date(j.last_billed_date);
+      const days=Math.floor((today-last)/(1000*60*60*24));
+      if (!((j.billing_frequency==='weekly'&&days>=7)||(j.billing_frequency==='monthly'&&days>=30))) return false;
+    }
+    if (dashQuickFilters.tasks     && !(dashTaskCounts[j.id]>0)) return false;
+    if (dashQuickFilters.materials && !(dashMatCounts[j.id]>0))  return false;
+    if (dashQuickFilters.starting) {
+      if (!j.start_date) return false;
+      const sd=new Date(j.start_date); if(sd<today||sd>weekEnd) return false;
+    }
+    if (dashQuickFilters.ending) {
+      if (!j.end_date) return false;
+      const ed=new Date(j.end_date); if(ed<today||ed>monthEnd) return false;
+    }
+    return true;
+  });
+
+  filtered = [...filtered].sort((a,b)=>{
+    const s=v=>v||'';
+    switch(sortVal){
+      case 'name_asc':    return s(a.job_name).localeCompare(s(b.job_name));
+      case 'name_desc':   return s(b.job_name).localeCompare(s(a.job_name));
+      case 'builder_asc': return s(a.builder).localeCompare(s(b.builder));
+      case 'start_asc':   return (a.start_date||'9999')>(b.start_date||'9999')?1:-1;
+      case 'start_desc':  return (a.start_date||'')<(b.start_date||'')?1:-1;
+      case 'end_asc':     return (a.end_date||'9999')>(b.end_date||'9999')?1:-1;
+      case 'end_desc':    return (a.end_date||'')<(b.end_date||'')?1:-1;
+      case 'created_asc': return (a.created_at||'')>(b.created_at||'')?1:-1;
+      default:            return (a.created_at||'')<(b.created_at||'')?1:-1;
+    }
+  });
+
+  const rc = document.getElementById('dash-result-count');
+  if (rc) rc.textContent = filtered.length===jobs.length ? `Showing all ${jobs.length} jobs` : `Showing ${filtered.length} of ${jobs.length} jobs`;
+
+  const bc = s=>({Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}[s]||'pending');
+  document.getElementById('dash-tbody').innerHTML = filtered.map(j=>`<tr onclick="openJob('${j.id}')">
+    <td><div class="job-name-cell">🏗 ${j.job_name||'Unnamed'}</div></td>
+    <td class="job-num-cell">${j.job_number||'—'}</td>
+    <td>${j.builder||'—'}</td>
+    <td><span class="badge badge-${bc(j.status)}">${j.status||'Pending'}</span></td>
+    <td style="color:var(--muted);font-size:12px">${j.start_date||'—'}</td>
+    <td style="color:var(--muted);font-size:12px">${j.end_date||'—'}</td>
+    <td>${dashTaskCounts[j.id]>0?`<span class="badge badge-pending">${dashTaskCounts[j.id]} open</span>`:'<span style="color:var(--muted);font-size:12px">None</span>'}</td>
+    <td>${dashMatCounts[j.id]>0 ?`<span class="badge badge-needed">${dashMatCounts[j.id]} needed</span>`:'<span style="color:var(--muted);font-size:12px">None</span>'}</td>
+  </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">No jobs match your filters.</td></tr>';
+}
+
+function toggleQuickFilter(key) {
+  dashQuickFilters[key] = !dashQuickFilters[key];
+  const btn = document.getElementById('qf-'+key);
+  if (btn) btn.classList.toggle('active', dashQuickFilters[key]);
+  applyDashFilters();
+}
+
+function clearDashFilters() {
+  document.getElementById('dash-search').value  = '';
+  document.getElementById('dash-status').value  = 'all';
+  document.getElementById('dash-builder').value = 'all';
+  document.getElementById('dash-sort').value    = 'created_desc';
+  Object.keys(dashQuickFilters).forEach(k=>{ dashQuickFilters[k]=false; const b=document.getElementById('qf-'+k); if(b) b.classList.remove('active'); });
+  applyDashFilters();
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
 function renderSettings() {
-  // Load current user data into settings form
-  const metadata = currentUser.user_metadata || {};
-  document.getElementById('settings-first-name').value = metadata.first_name || '';
-  document.getElementById('settings-last-name').value = metadata.last_name || '';
-  document.getElementById('settings-email').value = currentUser.email;
-  document.getElementById('settings-role').value = metadata.role || 'Staff';
-  // Clear password fields
+  const m = currentUser.user_metadata||{};
+  document.getElementById('settings-first-name').value = m.first_name||'';
+  document.getElementById('settings-last-name').value  = m.last_name||'';
+  document.getElementById('settings-email').value      = currentUser.email;
+  document.getElementById('settings-role').value       = m.role||'Staff';
   document.getElementById('settings-old-password').value = '';
   document.getElementById('settings-new-password').value = '';
   document.getElementById('settings-confirm-password').value = '';
@@ -1186,193 +1220,63 @@ function renderSettings() {
 
 async function saveSettings() {
   const firstName = document.getElementById('settings-first-name').value.trim();
-  const lastName = document.getElementById('settings-last-name').value.trim();
-  const role = document.getElementById('settings-role').value;
-  
-  if (!firstName || !lastName) {
-    showToast('Please fill in all fields', true);
-    return;
-  }
-  
-  const { error } = await sb.auth.updateUser({
-    data: {
-      first_name: firstName,
-      last_name: lastName,
-      role: role
-    }
-  });
-  
-  if (error) {
-    showToast('Error updating profile: ' + error.message, true);
-  } else {
-    currentUser = { ...currentUser, user_metadata: { ...currentUser.user_metadata, first_name: firstName, last_name: lastName, role: role } };
-    showToast('Profile updated successfully!');
-  }
+  const lastName  = document.getElementById('settings-last-name').value.trim();
+  const role      = document.getElementById('settings-role').value;
+  if (!firstName||!lastName) { showToast('Please fill in all fields',true); return; }
+  const { error } = await sb.auth.updateUser({ data:{first_name:firstName,last_name:lastName,role} });
+  if (error) showToast('Error: '+error.message,true);
+  else { currentUser={...currentUser,user_metadata:{...currentUser.user_metadata,first_name:firstName,last_name:lastName,role}}; showToast('Profile updated!'); }
 }
 
 async function changePassword() {
-  const oldPassword = document.getElementById('settings-old-password').value;
-  const newPassword = document.getElementById('settings-new-password').value;
-  const confirmPassword = document.getElementById('settings-confirm-password').value;
-  
-  if (!oldPassword || !newPassword || !confirmPassword) {
-    showToast('Please fill in all password fields', true);
-    return;
-  }
-  
-  if (newPassword !== confirmPassword) {
-    showToast('New passwords do not match', true);
-    return;
-  }
-  
-  if (newPassword.length < 8) {
-    showToast('Password must be at least 8 characters', true);
-    return;
-  }
-  
-  // Verify old password by signing in again
-  const { error: signInError } = await sb.auth.signInWithPassword({
-    email: currentUser.email,
-    password: oldPassword
-  });
-  
-  if (signInError) {
-    showToast('Current password is incorrect', true);
-    return;
-  }
-  
-  // Update to new password
-  const { error } = await sb.auth.updateUser({ password: newPassword });
-  
-  if (error) {
-    showToast('Error changing password: ' + error.message, true);
-  } else {
-    document.getElementById('settings-old-password').value = '';
-    document.getElementById('settings-new-password').value = '';
-    document.getElementById('settings-confirm-password').value = '';
-    showToast('Password changed successfully!');
-  }
+  const oldP = document.getElementById('settings-old-password').value;
+  const newP = document.getElementById('settings-new-password').value;
+  const conP = document.getElementById('settings-confirm-password').value;
+  if (!oldP||!newP||!conP) { showToast('Please fill in all password fields',true); return; }
+  if (newP!==conP)          { showToast('New passwords do not match',true); return; }
+  if (newP.length<8)        { showToast('Password must be at least 8 characters',true); return; }
+  const { error:signInError } = await sb.auth.signInWithPassword({ email:currentUser.email, password:oldP });
+  if (signInError) { showToast('Current password is incorrect',true); return; }
+  const { error } = await sb.auth.updateUser({ password:newP });
+  if (error) showToast('Error: '+error.message,true);
+  else { document.getElementById('settings-old-password').value=''; document.getElementById('settings-new-password').value=''; document.getElementById('settings-confirm-password').value=''; showToast('Password changed!'); }
 }
 
 function generatePassword() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-  let password = '';
-  for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  document.getElementById('new-user-password').value = password;
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let p=''; for(let i=0;i<12;i++) p+=chars.charAt(Math.floor(Math.random()*chars.length));
+  document.getElementById('new-user-password').value=p;
 }
 
 async function createNewUser() {
   const firstName = document.getElementById('new-user-first-name').value.trim();
-  const lastName = document.getElementById('new-user-last-name').value.trim();
-  const email = document.getElementById('new-user-email').value.trim().toLowerCase();
-  const password = document.getElementById('new-user-password').value;
-  const role = document.getElementById('new-user-role').value;
-  
-  if (!firstName || !lastName) {
-    showToast('Please enter first and last name', true);
-    return;
-  }
-  
-  if (!email || !email.includes('@')) {
-    showToast('Please enter a valid email address', true);
-    return;
-  }
-  
-  if (!password || password.length < 8) {
-    showToast('Password must be at least 8 characters', true);
-    return;
-  }
-  
+  const lastName  = document.getElementById('new-user-last-name').value.trim();
+  const email     = document.getElementById('new-user-email').value.trim().toLowerCase();
+  const password  = document.getElementById('new-user-password').value;
+  const role      = document.getElementById('new-user-role').value;
+  if (!firstName||!lastName) { showToast('Please enter first and last name',true); return; }
+  if (!email||!email.includes('@')) { showToast('Please enter a valid email',true); return; }
+  if (!password||password.length<8) { showToast('Password must be at least 8 characters',true); return; }
   try {
-    // Create Supabase client with service role key for admin operations
-    const sbAdmin = window.supabase.createClient(
-      'https://cghhtoshpmfcreawmfvm.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaGh0b3NocG1mY3JlYXdtZnZtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODQ2MDc5OSwiZXhwIjoyMDk0MDM2Nzk5fQ.sSQ_bmgJBpZ-SoK4b6yuS0_u5gOr_rRNGv4lMjc3NfQ'
-    );
-    
-    // Create user with confirmed email (no email verification needed)
-    const { data, error } = await sbAdmin.auth.admin.createUser({
-      email: email,
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        first_name: firstName,
-        last_name: lastName,
-        role: role,
-        created_by: currentUser.email
-      }
-    });
-    
-    if (error) {
-      showToast('Error: ' + error.message, true);
-      return;
-    }
-    
-    // Show success with credentials
-    document.getElementById('created-email').textContent = email;
+    const sbAdmin = window.supabase.createClient('https://cghhtoshpmfcreawmfvm.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaGh0b3NocG1mY3JlYXdtZnZtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODQ2MDc5OSwiZXhwIjoyMDk0MDM2Nzk5fQ.sSQ_bmgJBpZ-SoK4b6yuS0_u5gOr_rRNGv4lMjc3NfQ');
+    const { data, error } = await sbAdmin.auth.admin.createUser({ email, password, email_confirm:true, user_metadata:{first_name:firstName,last_name:lastName,role,created_by:currentUser.email} });
+    if (error) { showToast('Error: '+error.message,true); return; }
+    document.getElementById('created-email').textContent    = email;
     document.getElementById('created-password').textContent = password;
     document.getElementById('new-user-success').style.display = 'block';
-    
-    // Clear form
-    document.getElementById('new-user-first-name').value = '';
-    document.getElementById('new-user-last-name').value = '';
-    document.getElementById('new-user-email').value = '';
-    document.getElementById('new-user-password').value = '';
-    document.getElementById('new-user-role').value = 'Field';
-    
-    showToast('User account created successfully!');
-  } catch (err) {
-    showToast('Error creating user: ' + err.message, true);
-  }
+    document.getElementById('new-user-first-name').value='';
+    document.getElementById('new-user-last-name').value='';
+    document.getElementById('new-user-email').value='';
+    document.getElementById('new-user-password').value='';
+    showToast('User created!');
+  } catch(err) { showToast('Error: '+err.message,true); }
 }
 
 function copyCredentials() {
-  const email = document.getElementById('created-email').textContent;
+  const email    = document.getElementById('created-email').textContent;
   const password = document.getElementById('created-password').textContent;
   const text = `G&G Electric App Login:\nWebsite: https://gg-florida0.vercel.app\nEmail: ${email}\nPassword: ${password}\n\nYou can change your password after logging in (Settings → Change Password)`;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('Credentials copied to clipboard!');
-  }).catch(() => {
-    showToast('Copy failed - please copy manually', true);
-  });
-}
-
-// ── DASHBOARD ─────────────────────────────────────────────────────────────
-function renderDashboard() {
-  document.getElementById('s-total').textContent  = jobs.length;
-  document.getElementById('s-active').textContent = jobs.filter(j=>j.status==='Active').length;
-  document.getElementById('s-hold').textContent   = jobs.filter(j=>j.status==='On Hold').length;
-  document.getElementById('s-done').textContent   = jobs.filter(j=>j.status==='Complete').length;
-  const bc = s => { const m={Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}; return 'badge-'+(m[s]||'pending'); };
-  document.getElementById('dash-tbody').innerHTML = jobs.map(j=>`<tr onclick="openJob('${j.id}')">
-    <td><div class="job-name-cell">🏗 ${j.job_name||'Unnamed'}</div></td>
-    <td class="job-num-cell">${j.job_number||'—'}</td>
-    <td>${j.builder||'—'}</td>
-    <td><span class="badge ${bc(j.status)}">${j.status||'Pending'}</span></td>
-    <td style="color:var(--muted);font-size:12px">${j.start_date||'—'}</td>
-    <td style="color:var(--muted);font-size:12px">${j.end_date||'—'}</td>
-    <td id="dash-tasks-${j.id}">—</td>
-    <td id="dash-mats-${j.id}">—</td>
-  </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">No jobs yet. Create your first job!</td></tr>';
-  loadDashboardCounts();
-}
-
-async function loadDashboardCounts() {
-  for (const j of jobs) {
-    const [t, m] = await Promise.all([
-      sb.from('tasks').select('id,status').eq('job_id',j.id),
-      sb.from('materials').select('id,status').eq('job_id',j.id),
-    ]);
-    const openT = (t.data||[]).filter(r=>r.status!=='Complete').length;
-    const needM = (m.data||[]).filter(r=>r.status==='Needed').length;
-    const te = document.getElementById('dash-tasks-'+j.id);
-    const me = document.getElementById('dash-mats-'+j.id);
-    if (te) te.innerHTML = openT ? `<span class="badge badge-pending">${openT} open</span>` : '<span style="color:var(--muted);font-size:12px">None</span>';
-    if (me) me.innerHTML = needM ? `<span class="badge badge-needed">${needM} needed</span>` : '<span style="color:var(--muted);font-size:12px">None</span>';
-  }
+  navigator.clipboard.writeText(text).then(()=>showToast('Credentials copied!')).catch(()=>showToast('Copy failed',true));
 }
 
 // ── OPEN JOB ──────────────────────────────────────────────────────────────
@@ -1383,10 +1287,10 @@ async function openJob(id) {
   renderSidebar(document.getElementById('job-search').value);
   const job = jobs.find(j=>j.id===id);
   if (job) {
-    document.getElementById('job-title').textContent   = job.job_name||'Job';
-    document.getElementById('job-meta-num').innerHTML  = `<strong>Job #</strong> ${job.job_number||'—'}`;
-    document.getElementById('job-meta-gc').innerHTML   = `<strong>GC:</strong> ${job.builder||'—'}`;
-    const bc = s=>({Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}[s]||'pending');
+    document.getElementById('job-title').textContent  = job.job_name||'Job';
+    document.getElementById('job-meta-num').innerHTML = `<strong>Job #</strong> ${job.job_number||'—'}`;
+    document.getElementById('job-meta-gc').innerHTML  = `<strong>GC:</strong> ${job.builder||'—'}`;
+    const bc=s=>({Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}[s]||'pending');
     document.getElementById('job-meta-status').innerHTML = `<span class="badge badge-${bc(job.status)}">${job.status||'—'}</span>`;
     renderInfoGrid(job);
     loadBillingInfo();
@@ -1407,33 +1311,31 @@ function renderInfoGrid(job) {
       :`<input type="${t||'text'}" value="${esc(job[k])}" placeholder="—" onchange="saveField('jobs','${k}',this.value)">`
     }</div>`).join('');
 }
+
 async function saveField(table, col, val) {
   setSaveInd('saving');
-  const id = table==='jobs' ? currentJobId : currentJobId;
-  const { error } = await sb.from(table).update({[col]:val}).eq('id',id);
+  const { error } = await sb.from(table).update({[col]:val}).eq('id',currentJobId);
   if (error) showToast('Save error: '+error.message,true);
   else {
     setSaveInd('saved');
-    if (table==='jobs') { const j=jobs.find(j=>j.id===currentJobId); if(j) j[col]=val; renderSidebar(); }
+    if (table==='jobs') { const j=jobs.find(j=>j.id===currentJobId); if(j){j[col]=val;} renderSidebar(); loadCalendarEvents(); }
   }
 }
 
 // ── CONTACTS ──────────────────────────────────────────────────────────────
 async function loadContacts() {
   const { data } = await sb.from('contacts').select('*').eq('job_id',currentJobId).maybeSingle();
-  renderContactGrid(data||{});
-}
-function renderContactGrid(c) {
   const fields=[['Customer Name','customer_name'],['Customer Phone','customer_phone'],['Customer Email','customer_email'],['Inspector Name','inspector_name'],['Inspector Phone','inspector_phone'],['Inspector Email','inspector_email'],['GC Contact','gc_contact'],['GC Phone','gc_phone'],['GC Email','gc_email']];
   document.getElementById('contact-grid').innerHTML = fields.map(([l,k])=>`
     <div class="info-field"><label>${l}</label>
-    <input type="text" value="${esc(c[k])}" placeholder="—" onchange="saveContact('${k}',this.value)"></div>`).join('');
+    <input type="text" value="${esc((data||{})[k])}" placeholder="—" onchange="saveContact('${k}',this.value)"></div>`).join('');
 }
+
 async function saveContact(col, val) {
   setSaveInd('saving');
   const { data:ex } = await sb.from('contacts').select('id').eq('job_id',currentJobId).maybeSingle();
   if (ex) await sb.from('contacts').update({[col]:val}).eq('job_id',currentJobId);
-  else     await sb.from('contacts').insert({job_id:currentJobId,[col]:val});
+  else    await sb.from('contacts').insert({job_id:currentJobId,[col]:val});
   setSaveInd('saved');
 }
 
@@ -1449,21 +1351,22 @@ document.addEventListener('DOMContentLoaded',()=>{
     noteTimer = setTimeout(async()=>{
       const { data:ex } = await sb.from('job_notes').select('id').eq('job_id',currentJobId).maybeSingle();
       if(ex) await sb.from('job_notes').update({notes:this.value,updated_at:new Date().toISOString()}).eq('job_id',currentJobId);
-      else    await sb.from('job_notes').insert({job_id:currentJobId,notes:this.value,updated_by:currentUser.id});
+      else   await sb.from('job_notes').insert({job_id:currentJobId,notes:this.value,updated_by:currentUser.id});
       setSaveInd('saved');
     },1200);
   });
+  document.getElementById('modal-new-job').addEventListener('click',function(e){if(e.target===this)closeModal('modal-new-job');});
 });
 
 // ── TASKS ─────────────────────────────────────────────────────────────────
 async function loadTasks() {
   const { data } = await sb.from('tasks').select('*').eq('job_id',currentJobId).order('sort_order').order('created_at');
-  const rows = data||[];
-  const open = rows.filter(r=>r.status!=='Complete').length;
-  const badge = document.getElementById('task-badge');
-  badge.textContent = open?`${open} open`:'All done';
-  badge.className = `badge ${open?'badge-pending':'badge-active'}`;
-  document.getElementById('task-tbody').innerHTML = rows.map((r,i)=>`<tr>
+  const rows=data||[];
+  const open=rows.filter(r=>r.status!=='Complete').length;
+  const badge=document.getElementById('task-badge');
+  badge.textContent=open?`${open} open`:'All done';
+  badge.className=`badge ${open?'badge-pending':'badge-active'}`;
+  document.getElementById('task-tbody').innerHTML=rows.map((r,i)=>`<tr>
     <td class="row-num">${i+1}</td>
     <td><input type="text" value="${esc(r.description)}" placeholder="Describe task..." onchange="uRow('tasks','description','${r.id}',this.value)"></td>
     <td><input type="text" value="${esc(r.assigned_to)}" placeholder="Name..." onchange="uRow('tasks','assigned_to','${r.id}',this.value)"></td>
@@ -1477,13 +1380,13 @@ async function loadTasks() {
 // ── MATERIALS ─────────────────────────────────────────────────────────────
 async function loadMaterials() {
   const { data } = await sb.from('materials').select('*').eq('job_id',currentJobId).order('sort_order').order('created_at');
-  const rows = data||[];
-  const fmt = v=>v?'$'+parseFloat(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
-  const est = rows.reduce((s,r)=>s+parseFloat(r.est_cost||0),0);
-  const act = rows.reduce((s,r)=>s+parseFloat(r.actual_cost||0),0);
-  document.getElementById('mat-est-total').textContent = fmt(est);
-  document.getElementById('mat-act-total').textContent = act>0?fmt(act):'—';
-  document.getElementById('mat-tbody').innerHTML = rows.map((r,i)=>`<tr>
+  const rows=data||[];
+  const fmt=v=>v?'$'+parseFloat(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  const est=rows.reduce((s,r)=>s+parseFloat(r.est_cost||0),0);
+  const act=rows.reduce((s,r)=>s+parseFloat(r.actual_cost||0),0);
+  document.getElementById('mat-est-total').textContent=fmt(est);
+  document.getElementById('mat-act-total').textContent=act>0?fmt(act):'—';
+  document.getElementById('mat-tbody').innerHTML=rows.map((r,i)=>`<tr>
     <td class="row-num">${i+1}</td>
     <td><input type="text" value="${esc(r.name)}" placeholder="Material..." onchange="uRow('materials','name','${r.id}',this.value)"></td>
     <td><input type="number" value="${r.qty_needed||''}" placeholder="0" style="text-align:center" onchange="uRow('materials','qty_needed','${r.id}',this.value)"></td>
@@ -1494,7 +1397,9 @@ async function loadMaterials() {
     <td><input type="number" value="${r.est_cost||''}" placeholder="0.00" style="text-align:right" onchange="uRow('materials','est_cost','${r.id}',this.value);loadMaterials()"></td>
     <td><input type="number" value="${r.actual_cost||''}" placeholder="0.00" style="text-align:right" onchange="uRow('materials','actual_cost','${r.id}',this.value);loadMaterials()"></td>
     <td><input type="date" value="${r.delivery_date||''}" onchange="uRow('materials','delivery_date','${r.id}',this.value)"></td>
-    <td><select onchange="uRow('materials','status','${r.id}',this.value)">${['Needed','Ordered','Partially Received','Received','N/A'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+    <td><select onchange="uRow('materials','status','${r.id}',this.value)">
+      ${['Needed','On Hand','Ordered','Partially Received','Received','N/A'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+    </select></td>
     <td><button class="del-btn" onclick="dRow('materials','${r.id}',loadMaterials)">✕</button></td>
   </tr>`).join('')||emptyRow(12,'No materials yet');
 }
@@ -1502,11 +1407,11 @@ async function loadMaterials() {
 // ── INSPECTIONS ───────────────────────────────────────────────────────────
 async function loadInspections() {
   const { data } = await sb.from('inspections').select('*').eq('job_id',currentJobId).order('sort_order').order('created_at');
-  document.getElementById('insp-tbody').innerHTML = (data||[]).map((r,i)=>`<tr>
+  document.getElementById('insp-tbody').innerHTML=(data||[]).map((r,i)=>`<tr>
     <td class="row-num">${i+1}</td>
     <td><input type="text" value="${esc(r.item)}" placeholder="Inspection item..." onchange="uRow('inspections','item','${r.id}',this.value)"></td>
     <td><input type="text" value="${esc(r.inspector)}" placeholder="Inspector..." onchange="uRow('inspections','inspector','${r.id}',this.value)"></td>
-    <td><input type="date" value="${r.scheduled_date||''}" onchange="uRow('inspections','scheduled_date','${r.id}',this.value)"></td>
+    <td><input type="date" value="${r.scheduled_date||''}" onchange="uRow('inspections','scheduled_date','${r.id}',this.value);loadCalendarEvents()"></td>
     <td><select onchange="uRow('inspections','result','${r.id}',this.value)">${['Pending','Scheduled','Pass','Fail','N/A'].map(s=>`<option ${r.result===s?'selected':''}>${s}</option>`).join('')}</select></td>
     <td><input type="text" value="${esc(r.permit_number)}" placeholder="Permit #..." onchange="uRow('inspections','permit_number','${r.id}',this.value)"></td>
     <td><button class="del-btn" onclick="dRow('inspections','${r.id}',loadInspections)">✕</button></td>
@@ -1516,10 +1421,9 @@ async function loadInspections() {
 // ── HOURS ─────────────────────────────────────────────────────────────────
 async function loadHours() {
   const { data } = await sb.from('hours_logged').select('*').eq('job_id',currentJobId).order('work_date').order('created_at');
-  const rows = data||[];
-  const total = rows.reduce((s,r)=>s+parseFloat(r.hours||0),0);
-  document.getElementById('hrs-total').textContent = total.toFixed(1);
-  document.getElementById('hrs-tbody').innerHTML = rows.map((r,i)=>`<tr>
+  const rows=data||[];
+  document.getElementById('hrs-total').textContent=rows.reduce((s,r)=>s+parseFloat(r.hours||0),0).toFixed(1);
+  document.getElementById('hrs-tbody').innerHTML=rows.map((r,i)=>`<tr>
     <td class="row-num">${i+1}</td>
     <td><input type="text" value="${esc(r.employee_name)}" placeholder="Employee..." onchange="uRow('hours_logged','employee_name','${r.id}',this.value)"></td>
     <td><input type="date" value="${r.work_date||''}" onchange="uRow('hours_logged','work_date','${r.id}',this.value)"></td>
@@ -1543,16 +1447,14 @@ async function dRow(table, id, refresh) {
   if (error) showToast('Error: '+error.message,true);
   else { showToast('Deleted'); refresh(); }
 }
-
-// ── ADD ROW ───────────────────────────────────────────────────────────────
 async function addRow(type) {
   const map = {
-    task: { table:'tasks',      data:{ job_id:currentJobId, description:'', assigned_to:'', priority:'Medium', status:'Not Started', sort_order:999 }, refresh:loadTasks,       sel:'#task-tbody' },
-    mat:  { table:'materials',  data:{ job_id:currentJobId, name:'', status:'Needed', sort_order:999 },                                               refresh:loadMaterials,    sel:'#mat-tbody'  },
-    insp: { table:'inspections',data:{ job_id:currentJobId, item:'', result:'Pending', sort_order:999 },                                              refresh:loadInspections,  sel:'#insp-tbody' },
-    hrs:  { table:'hours_logged',data:{ job_id:currentJobId, employee_name:'', overtime:false },                                                       refresh:loadHours,        sel:'#hrs-tbody'  },
+    task: { table:'tasks',       data:{job_id:currentJobId,description:'',assigned_to:'',priority:'Medium',status:'Not Started',sort_order:999}, refresh:loadTasks,      sel:'#task-tbody' },
+    mat:  { table:'materials',   data:{job_id:currentJobId,name:'',status:'Needed',sort_order:999},                                              refresh:loadMaterials,  sel:'#mat-tbody'  },
+    insp: { table:'inspections', data:{job_id:currentJobId,item:'',result:'Pending',sort_order:999},                                             refresh:loadInspections,sel:'#insp-tbody' },
+    hrs:  { table:'hours_logged',data:{job_id:currentJobId,employee_name:'',overtime:false},                                                     refresh:loadHours,      sel:'#hrs-tbody'  },
   };
-  const { table, data, refresh, sel } = map[type];
+  const { table,data,refresh,sel } = map[type];
   const { error } = await sb.from(table).insert(data);
   if (error) showToast('Error: '+error.message,true);
   else { await refresh(); const rows=document.querySelectorAll(sel+' tr'); if(rows.length){rows[rows.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});rows[rows.length-1].querySelector('input')?.focus();} }
@@ -1560,393 +1462,183 @@ async function addRow(type) {
 
 // ── BILLING ───────────────────────────────────────────────────────────────
 function updateBillingStatus() {
-  const frequency = document.getElementById('job-billing-frequency').value;
-  const lastBilledDate = document.getElementById('job-last-billed-date').value;
-  const badge = document.getElementById('billing-status-badge');
-  
-  if (!lastBilledDate) {
-    badge.textContent = '';
-    return;
-  }
-  
-  const last = new Date(lastBilledDate);
-  const today = new Date();
-  const daysDiff = Math.floor((today - last) / (1000 * 60 * 60 * 24));
-  
-  let isOverdue = false;
-  let statusText = '';
-  
-  if (frequency === 'weekly') {
-    isOverdue = daysDiff >= 7;
-    statusText = isOverdue ? '⚠️ OVERDUE' : '✓ On Track';
-  } else if (frequency === 'monthly') {
-    isOverdue = daysDiff >= 30;
-    statusText = isOverdue ? '⚠️ OVERDUE' : '✓ On Track';
-  } else if (frequency === 'end_of_job') {
-    statusText = '◉ End of Job';
-  }
-  
-  badge.textContent = statusText;
-  badge.style.background = isOverdue ? 'var(--danger-bg)' : 'var(--success-bg)';
-  badge.style.color = isOverdue ? 'var(--danger)' : 'var(--success)';
+  const freq = document.getElementById('job-billing-frequency').value;
+  const last = document.getElementById('job-last-billed-date').value;
+  const badge= document.getElementById('billing-status-badge');
+  if (!last) { badge.textContent=''; return; }
+  const lastD=new Date(last), today=new Date();
+  const days=Math.floor((today-lastD)/(1000*60*60*24));
+  let isOverdue=false, txt='';
+  if (freq==='weekly')    { isOverdue=days>=7;  txt=isOverdue?'⚠️ OVERDUE':'✓ On Track'; }
+  else if(freq==='monthly'){ isOverdue=days>=30; txt=isOverdue?'⚠️ OVERDUE':'✓ On Track'; }
+  else txt='◉ End of Job';
+  badge.textContent=txt;
+  badge.style.background=isOverdue?'var(--danger-bg)':'var(--success-bg)';
+  badge.style.color=isOverdue?'var(--danger)':'var(--success)';
 }
 
 async function saveBillingInfo() {
-  const frequency = document.getElementById('job-billing-frequency').value;
-  const lastBilledDate = document.getElementById('job-last-billed-date').value;
-  
-  if (!lastBilledDate) {
-    showToast('Please select a last billed date', true);
-    return;
-  }
-  
-  const { error } = await sb.from('jobs').update({
-    billing_frequency: frequency,
-    last_billed_date: lastBilledDate
-  }).eq('id', currentJobId);
-  
-  if (error) {
-    showToast('Error saving billing info: ' + error.message, true);
-  } else {
-    showToast('Billing info saved!');
-    updateBillingStatus();
-  }
+  const freq=document.getElementById('job-billing-frequency').value;
+  const last=document.getElementById('job-last-billed-date').value;
+  if (!last) { showToast('Please select a last billed date',true); return; }
+  const { error }=await sb.from('jobs').update({billing_frequency:freq,last_billed_date:last}).eq('id',currentJobId);
+  if (error) showToast('Error: '+error.message,true);
+  else { showToast('Billing info saved!'); updateBillingStatus(); const j=jobs.find(j=>j.id===currentJobId); if(j){j.billing_frequency=freq;j.last_billed_date=last;} loadCalendarEvents(); }
 }
 
 function loadBillingInfo() {
-  // Load billing info when viewing a job
-  const job = jobs.find(j => j.id === currentJobId);
-  if (!job) return;
-  
-  document.getElementById('job-billing-frequency').value = job.billing_frequency || 'end_of_job';
-  if (job.last_billed_date) {
-    document.getElementById('job-last-billed-date').value = job.last_billed_date;
-  }
+  const job=jobs.find(j=>j.id===currentJobId); if(!job) return;
+  document.getElementById('job-billing-frequency').value=job.billing_frequency||'end_of_job';
+  if(job.last_billed_date) document.getElementById('job-last-billed-date').value=job.last_billed_date;
   updateBillingStatus();
 }
 
 // ── DAILY REPORTS ─────────────────────────────────────────────────────────
-let pendingSuggestions = [];
+let pendingSuggestions=[];
+let editingReportId=null;
 
 function openDailyReportModal() {
-  editingReportId = null;
-  
-  // Reset modal to "Add" mode
-  document.querySelector('#modal-daily-report h2').textContent = 'Daily Field Report';
-  document.querySelector('#modal-daily-report .btn-primary').textContent = 'Submit Report';
-  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick', 'submitDailyReport()');
-  
-  // Pre-fill with today's date
-  document.getElementById('dr-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('dr-employee').value = '';
-  document.getElementById('dr-hours').value = '';
-  document.getElementById('dr-overtime').value = 'false';
-  document.getElementById('dr-work').value = '';
-  document.getElementById('dr-materials-used').value = '';
-  document.getElementById('dr-materials-needed').value = '';
-  document.getElementById('dr-photo').value = '';
+  editingReportId=null;
+  document.querySelector('#modal-daily-report h2').textContent='Daily Field Report';
+  document.querySelector('#modal-daily-report .btn-primary').textContent='Submit Report';
+  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick','submitDailyReport()');
+  document.getElementById('dr-date').value=new Date().toISOString().split('T')[0];
+  ['dr-employee','dr-work','dr-materials-used','dr-materials-needed'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('dr-hours').value='';
+  document.getElementById('dr-overtime').value='false';
+  document.getElementById('dr-photo').value='';
   document.getElementById('modal-daily-report').classList.add('open');
 }
 
 async function submitDailyReport() {
-  const date = document.getElementById('dr-date').value;
-  const employee = document.getElementById('dr-employee').value.trim();
-  const hours = parseFloat(document.getElementById('dr-hours').value) || 0;
-  const overtime = document.getElementById('dr-overtime').value === 'true';
-  const work = document.getElementById('dr-work').value.trim();
-  const materialsUsed = document.getElementById('dr-materials-used').value.trim();
-  const materialsNeeded = document.getElementById('dr-materials-needed').value.trim();
-  const photoFile = document.getElementById('dr-photo').files[0];
-  
-  if (!date || !employee || hours <= 0) {
-    showToast('Please fill in date, employee, and hours', true);
-    return;
-  }
-  
-  setLoading(true, 'Saving report...');
-  
-  let photoUrl = null;
-  
-  // Upload photo if provided
+  const date=document.getElementById('dr-date').value;
+  const employee=document.getElementById('dr-employee').value.trim();
+  const hours=parseFloat(document.getElementById('dr-hours').value)||0;
+  const overtime=document.getElementById('dr-overtime').value==='true';
+  const work=document.getElementById('dr-work').value.trim();
+  const mUsed=document.getElementById('dr-materials-used').value.trim();
+  const mNeeded=document.getElementById('dr-materials-needed').value.trim();
+  const photoFile=document.getElementById('dr-photo').files[0];
+  if (!date||!employee||hours<=0) { showToast('Please fill in date, employee, and hours',true); return; }
+  setLoading(true,'Saving report...');
+  let photoUrl=null;
   if (photoFile) {
-    const path = `${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
-    const { error: upErr } = await sb.storage.from('job-files').upload(path, photoFile);
-    if (!upErr) {
-      const { data: ud } = await sb.storage.from('job-files').getPublicUrl(path);
-      photoUrl = ud.publicUrl;
-    }
+    const path=`${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
+    const { error:upErr }=await sb.storage.from('job-files').upload(path,photoFile);
+    if (!upErr) { const { data:ud }=await sb.storage.from('job-files').getPublicUrl(path); photoUrl=ud.publicUrl; }
   }
-  
-  // Save report
-  const { data, error } = await sb.from('daily_reports').insert({
-    job_id: currentJobId,
-    report_date: date,
-    employee_name: employee,
-    hours_worked: hours,
-    overtime: overtime,
-    work_completed: work,
-    materials_used: materialsUsed,
-    materials_needed: materialsNeeded,
-    photo_url: photoUrl,
-    created_by: currentUser.id
-  }).select().single();
-  
+  const { error }=await sb.from('daily_reports').insert({job_id:currentJobId,report_date:date,employee_name:employee,hours_worked:hours,overtime,work_completed:work,materials_used:mUsed,materials_needed:mNeeded,photo_url:photoUrl,created_by:currentUser.id});
   setLoading(false);
-  
-  if (error) {
-    showToast('Error saving report: ' + error.message, true);
-    return;
-  }
-  
+  if (error) { showToast('Error: '+error.message,true); return; }
   showToast('Daily report saved!');
   closeModal('modal-daily-report');
-  
-  // Build suggestions
-  pendingSuggestions = [];
-  
-  // Suggest adding hours
-  if (hours > 0) {
-    pendingSuggestions.push({
-      type: 'hours',
-      label: `Add ${hours} hours${overtime ? ' (overtime)' : ''} for ${employee} on ${date}`,
-      data: {
-        job_id: currentJobId,
-        employee_name: employee,
-        work_date: date,
-        hours: hours,
-        overtime: overtime,
-        work_performed: work
-      }
-    });
-  }
-  
-  // Suggest materials used (each line becomes a suggestion)
-  if (materialsUsed) {
-    materialsUsed.split('\n').filter(l => l.trim()).forEach(line => {
-      pendingSuggestions.push({
-        type: 'material_used',
-        label: `Add as used material: ${line.trim()}`,
-        data: {
-          job_id: currentJobId,
-          name: line.trim(),
-          status: 'Received',
-          sort_order: 999
-        }
-      });
-    });
-  }
-  
-  // Suggest materials needed (add to materials table)
-  if (materialsNeeded) {
-    materialsNeeded.split('\n').filter(l => l.trim()).forEach(line => {
-      pendingSuggestions.push({
-        type: 'material_needed',
-        label: `Add to materials list: ${line.trim()}`,
-        data: {
-          job_id: currentJobId,
-          name: line.trim(),
-          status: 'Needed',
-          sort_order: 999
-        }
-      });
-    });
-  }
-  
-  // Show suggestions if any
-  if (pendingSuggestions.length > 0) {
-    showSuggestions();
-  }
-  
+  pendingSuggestions=[];
+  if (hours>0) pendingSuggestions.push({type:'hours',label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,data:{job_id:currentJobId,employee_name:employee,work_date:date,hours,overtime,work_performed:work}});
+  mUsed.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({type:'material_used',label:`Add as used: ${line.trim()}`,data:{job_id:currentJobId,name:line.trim(),status:'Received',sort_order:999}}));
+  mNeeded.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({type:'material_needed',label:`Add to materials list: ${line.trim()}`,data:{job_id:currentJobId,name:line.trim(),status:'Needed',sort_order:999}}));
+  if (pendingSuggestions.length>0) showSuggestions();
   loadDailyReports();
 }
 
 function showSuggestions() {
-  const list = document.getElementById('suggestions-list');
-  list.innerHTML = pendingSuggestions.map((s, i) => `
+  document.getElementById('suggestions-list').innerHTML=pendingSuggestions.map((s,i)=>`
     <label style="display:flex;align-items:start;gap:10px;padding:12px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
       <input type="checkbox" id="sug-${i}" checked style="margin-top:2px;cursor:pointer;">
       <div style="flex:1;font-size:13px;color:var(--charcoal);">${s.label}</div>
-    </label>
-  `).join('');
+    </label>`).join('');
   document.getElementById('modal-suggestions').classList.add('open');
 }
 
 async function applySuggestions() {
-  setLoading(true, 'Applying updates...');
-  
-  let applied = 0;
-  let errors = [];
-  
-  for (let i = 0; i < pendingSuggestions.length; i++) {
-    const checkbox = document.getElementById(`sug-${i}`);
-    if (!checkbox?.checked) continue;
-    
-    const s = pendingSuggestions[i];
-    
-    try {
-      if (s.type === 'hours') {
-        const { error } = await sb.from('hours_logged').insert(s.data);
-        if (error) errors.push('Hours: ' + error.message);
-        else applied++;
-      } else if (s.type === 'material_needed' || s.type === 'material_used') {
-        const { error } = await sb.from('materials').insert(s.data);
-        if (error) errors.push('Material: ' + error.message);
-        else applied++;
-      }
-    } catch (err) {
-      errors.push(err.message);
-    }
+  setLoading(true,'Applying updates...');
+  let applied=0, errors=[];
+  for (let i=0;i<pendingSuggestions.length;i++) {
+    const cb=document.getElementById(`sug-${i}`);
+    if (!cb?.checked) continue;
+    const s=pendingSuggestions[i];
+    const table=s.type==='hours'?'hours_logged':'materials';
+    const { error }=await sb.from(table).insert(s.data);
+    if (error) errors.push(error.message); else applied++;
   }
-  
   setLoading(false);
   closeModal('modal-suggestions');
-  
-  if (errors.length > 0) {
-    showToast(`Applied ${applied}, but ${errors.length} failed: ${errors[0]}`, true);
-    console.error('Suggestion errors:', errors);
-  } else {
-    showToast(`Applied ${applied} update(s)!`);
-  }
-  
-  // Refresh related sections
-  if (typeof loadMaterials === 'function') await loadMaterials();
-  if (typeof loadHours === 'function') await loadHours();
+  if (errors.length) showToast(`Applied ${applied}, ${errors.length} failed`,true);
+  else showToast(`Applied ${applied} update(s)!`);
+  await loadMaterials(); await loadHours();
 }
 
 async function loadDailyReports() {
-  const { data, error } = await sb.from('daily_reports')
-    .select('*')
-    .eq('job_id', currentJobId)
-    .order('report_date', { ascending: false });
-  
-  const reports = data || [];
-  const list = document.getElementById('daily-reports-list');
-  const badge = document.getElementById('reports-count-badge');
-  
-  badge.textContent = reports.length > 0 ? `${reports.length} report${reports.length === 1 ? '' : 's'}` : '';
-  
-  if (reports.length === 0) {
-    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No daily reports yet</div>';
-    return;
-  }
-  
-  list.innerHTML = reports.map(r => `
+  const { data }=await sb.from('daily_reports').select('*').eq('job_id',currentJobId).order('report_date',{ascending:false});
+  const reports=data||[];
+  const badge=document.getElementById('reports-count-badge');
+  badge.textContent=reports.length>0?`${reports.length} report${reports.length===1?'':'s'}`:'';
+  const list=document.getElementById('daily-reports-list');
+  if (!reports.length) { list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No daily reports yet</div>'; return; }
+  list.innerHTML=reports.map(r=>`
     <div style="padding:14px;background:var(--bg);border-radius:var(--radius);border-left:3px solid var(--teal);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div>
-          <strong style="font-size:13px;color:var(--charcoal);">${r.employee_name}</strong>
-          <span style="color:var(--muted);font-size:12px;margin-left:8px;">${new Date(r.report_date).toLocaleDateString()}</span>
-        </div>
+        <div><strong style="font-size:13px;">${r.employee_name}</strong><span style="color:var(--muted);font-size:12px;margin-left:8px;">${new Date(r.report_date).toLocaleDateString()}</span></div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;">${r.hours_worked}h${r.overtime ? ' OT' : ''}</span>
+          <span style="background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;">${r.hours_worked}h${r.overtime?' OT':''}</span>
           <button onclick="editDailyReport('${r.id}')" style="background:none;border:1px solid var(--border);color:var(--teal);cursor:pointer;padding:3px 10px;border-radius:4px;font-size:11px;">Edit</button>
           <button onclick="deleteReport('${r.id}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;line-height:1;">×</button>
         </div>
       </div>
-      ${r.work_completed ? `<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Work:</strong> ${r.work_completed}</div>` : ''}
-      ${r.materials_used ? `<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Materials Used:</strong><div style="font-family:'DM Mono',monospace;font-size:11px;white-space:pre-line;margin-top:4px;padding-left:8px;border-left:2px solid var(--border);">${r.materials_used}</div></div>` : ''}
-      ${r.materials_needed ? `<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Materials Needed:</strong><div style="font-family:'DM Mono',monospace;font-size:11px;white-space:pre-line;margin-top:4px;padding-left:8px;border-left:2px solid var(--warning);">${r.materials_needed}</div></div>` : ''}
-      ${r.photo_url ? `<div style="margin-top:8px;"><a href="${r.photo_url}" target="_blank" style="color:var(--teal);font-size:12px;text-decoration:none;">📷 View Report Photo</a></div>` : ''}
-    </div>
-  `).join('');
+      ${r.work_completed?`<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Work:</strong> ${r.work_completed}</div>`:''}
+      ${r.materials_used?`<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Materials Used:</strong><div style="font-family:'DM Mono',monospace;font-size:11px;white-space:pre-line;margin-top:4px;padding-left:8px;border-left:2px solid var(--border);">${r.materials_used}</div></div>`:''}
+      ${r.materials_needed?`<div style="font-size:12px;color:var(--mid);margin-bottom:8px;"><strong>Materials Needed:</strong><div style="font-family:'DM Mono',monospace;font-size:11px;white-space:pre-line;margin-top:4px;padding-left:8px;border-left:2px solid var(--warning);">${r.materials_needed}</div></div>`:''}
+      ${r.photo_url?`<div style="margin-top:8px;"><a href="${r.photo_url}" target="_blank" style="color:var(--teal);font-size:12px;text-decoration:none;">📷 View Photo</a></div>`:''}
+    </div>`).join('');
 }
 
-let editingReportId = null;
-
 async function editDailyReport(id) {
-  const { data, error } = await sb.from('daily_reports').select('*').eq('id', id).single();
-  if (error || !data) {
-    showToast('Error loading report', true);
-    return;
-  }
-  
-  editingReportId = id;
-  
-  // Pre-fill modal with existing data
-  document.getElementById('dr-date').value = data.report_date;
-  document.getElementById('dr-employee').value = data.employee_name || '';
-  document.getElementById('dr-hours').value = data.hours_worked || '';
-  document.getElementById('dr-overtime').value = data.overtime ? 'true' : 'false';
-  document.getElementById('dr-work').value = data.work_completed || '';
-  document.getElementById('dr-materials-used').value = data.materials_used || '';
-  document.getElementById('dr-materials-needed').value = data.materials_needed || '';
-  document.getElementById('dr-photo').value = '';
-  
-  // Change modal title and button
-  document.querySelector('#modal-daily-report h2').textContent = 'Edit Daily Report';
-  document.querySelector('#modal-daily-report .btn-primary').textContent = 'Update Report';
-  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick', 'updateDailyReport()');
-  
+  const { data,error }=await sb.from('daily_reports').select('*').eq('id',id).single();
+  if (error||!data) { showToast('Error loading report',true); return; }
+  editingReportId=id;
+  document.getElementById('dr-date').value=data.report_date;
+  document.getElementById('dr-employee').value=data.employee_name||'';
+  document.getElementById('dr-hours').value=data.hours_worked||'';
+  document.getElementById('dr-overtime').value=data.overtime?'true':'false';
+  document.getElementById('dr-work').value=data.work_completed||'';
+  document.getElementById('dr-materials-used').value=data.materials_used||'';
+  document.getElementById('dr-materials-needed').value=data.materials_needed||'';
+  document.getElementById('dr-photo').value='';
+  document.querySelector('#modal-daily-report h2').textContent='Edit Daily Report';
+  document.querySelector('#modal-daily-report .btn-primary').textContent='Update Report';
+  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick','updateDailyReport()');
   document.getElementById('modal-daily-report').classList.add('open');
 }
 
 async function updateDailyReport() {
-  const date = document.getElementById('dr-date').value;
-  const employee = document.getElementById('dr-employee').value.trim();
-  const hours = parseFloat(document.getElementById('dr-hours').value) || 0;
-  const overtime = document.getElementById('dr-overtime').value === 'true';
-  const work = document.getElementById('dr-work').value.trim();
-  const materialsUsed = document.getElementById('dr-materials-used').value.trim();
-  const materialsNeeded = document.getElementById('dr-materials-needed').value.trim();
-  const photoFile = document.getElementById('dr-photo').files[0];
-  
-  if (!date || !employee || hours <= 0) {
-    showToast('Please fill in date, employee, and hours', true);
-    return;
-  }
-  
-  setLoading(true, 'Updating report...');
-  
-  const updateData = {
-    report_date: date,
-    employee_name: employee,
-    hours_worked: hours,
-    overtime: overtime,
-    work_completed: work,
-    materials_used: materialsUsed,
-    materials_needed: materialsNeeded
-  };
-  
-  // Upload new photo if provided
+  const date=document.getElementById('dr-date').value;
+  const employee=document.getElementById('dr-employee').value.trim();
+  const hours=parseFloat(document.getElementById('dr-hours').value)||0;
+  if (!date||!employee||hours<=0) { showToast('Please fill in date, employee, and hours',true); return; }
+  setLoading(true,'Updating report...');
+  const updateData={ report_date:date, employee_name:employee, hours_worked:hours, overtime:document.getElementById('dr-overtime').value==='true', work_completed:document.getElementById('dr-work').value.trim(), materials_used:document.getElementById('dr-materials-used').value.trim(), materials_needed:document.getElementById('dr-materials-needed').value.trim() };
+  const photoFile=document.getElementById('dr-photo').files[0];
   if (photoFile) {
-    const path = `${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
-    const { error: upErr } = await sb.storage.from('job-files').upload(path, photoFile);
-    if (!upErr) {
-      const { data: ud } = await sb.storage.from('job-files').getPublicUrl(path);
-      updateData.photo_url = ud.publicUrl;
-    }
+    const path=`${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
+    const { error:upErr }=await sb.storage.from('job-files').upload(path,photoFile);
+    if (!upErr) { const { data:ud }=await sb.storage.from('job-files').getPublicUrl(path); updateData.photo_url=ud.publicUrl; }
   }
-  
-  const { error } = await sb.from('daily_reports').update(updateData).eq('id', editingReportId);
-  
+  const { error }=await sb.from('daily_reports').update(updateData).eq('id',editingReportId);
   setLoading(false);
-  
-  if (error) {
-    showToast('Error updating report: ' + error.message, true);
-    return;
-  }
-  
+  if (error) { showToast('Error: '+error.message,true); return; }
   showToast('Report updated!');
   closeModal('modal-daily-report');
-  
-  // Reset modal back to "Add" mode
-  document.querySelector('#modal-daily-report h2').textContent = 'Daily Field Report';
-  document.querySelector('#modal-daily-report .btn-primary').textContent = 'Submit Report';
-  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick', 'submitDailyReport()');
-  editingReportId = null;
-  
+  document.querySelector('#modal-daily-report h2').textContent='Daily Field Report';
+  document.querySelector('#modal-daily-report .btn-primary').textContent='Submit Report';
+  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick','submitDailyReport()');
+  editingReportId=null;
   loadDailyReports();
 }
 
 async function deleteReport(id) {
   if (!confirm('Delete this daily report?')) return;
-  const { error } = await sb.from('daily_reports').delete().eq('id', id);
-  if (error) {
-    showToast('Error deleting report', true);
-  } else {
-    showToast('Report deleted');
-    loadDailyReports();
-  }
+  const { error }=await sb.from('daily_reports').delete().eq('id',id);
+  if (error) showToast('Error deleting report',true);
+  else { showToast('Report deleted'); loadDailyReports(); }
 }
 
 // ── PHOTOS ────────────────────────────────────────────────────────────────
@@ -1955,18 +1647,19 @@ async function handlePhotoUpload(e) {
   setLoading(true,`Uploading ${files.length} photo(s)...`);
   for(const file of files){
     const path=`${currentJobId}/photos/${Date.now()}_${file.name}`;
-    const { error:upErr } = await sb.storage.from('job-files').upload(path,file);
+    const { error:upErr }=await sb.storage.from('job-files').upload(path,file);
     if(upErr){showToast('Upload error: '+upErr.message,true);continue;}
-    const { data:ud } = await sb.storage.from('job-files').getPublicUrl(path);
+    const { data:ud }=await sb.storage.from('job-files').getPublicUrl(path);
     await sb.from('job_files').insert({job_id:currentJobId,file_name:file.name,file_url:ud.publicUrl,file_category:'photo',file_type:file.type,stage_tag:stage,notes:note,uploaded_by:currentUser.id});
   }
   setLoading(false); document.getElementById('photo-note').value=''; e.target.value='';
   await loadPhotos(); showToast(`✓ ${files.length} photo(s) uploaded`);
 }
+
 async function loadPhotos() {
-  const { data } = await sb.from('job_files').select('*').eq('job_id',currentJobId).eq('file_category','photo').order('created_at');
+  const { data }=await sb.from('job_files').select('*').eq('job_id',currentJobId).eq('file_category','photo').order('created_at');
   const photos=data||[], grid=document.getElementById('photo-grid');
-  if(!photos.length){grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>';return;}
+  if (!photos.length) { grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>'; return; }
   grid.innerHTML=photos.map(p=>`<div class="photo-card"><img class="photo-thumb" src="${p.file_url}" onclick="window.open('${p.file_url}','_blank')"><div class="photo-info"><div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''} ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}</div></div>`).join('');
 }
 
@@ -1976,16 +1669,17 @@ async function handleDocUpload(e) {
   setLoading(true,`Uploading ${files.length} document(s)...`);
   for(const file of files){
     const path=`${currentJobId}/docs/${Date.now()}_${file.name}`;
-    const { error:upErr } = await sb.storage.from('job-files').upload(path,file);
+    const { error:upErr }=await sb.storage.from('job-files').upload(path,file);
     if(upErr){showToast('Upload error: '+upErr.message,true);continue;}
-    const { data:ud } = await sb.storage.from('job-files').getPublicUrl(path);
+    const { data:ud }=await sb.storage.from('job-files').getPublicUrl(path);
     await sb.from('job_files').insert({job_id:currentJobId,file_name:file.name,file_url:ud.publicUrl,file_category:type,file_type:file.type,notes:note,uploaded_by:currentUser.id});
   }
   setLoading(false); document.getElementById('doc-note').value=''; e.target.value='';
   await loadDocs(); showToast(`✓ ${files.length} document(s) uploaded`);
 }
+
 async function loadDocs() {
-  const { data } = await sb.from('job_files').select('*').eq('job_id',currentJobId).neq('file_category','photo').order('created_at');
+  const { data }=await sb.from('job_files').select('*').eq('job_id',currentJobId).neq('file_category','photo').order('created_at');
   const docs=data||[];
   document.getElementById('doc-empty').style.display=docs.length?'none':'block';
   document.getElementById('doc-tbody').innerHTML=docs.map(d=>`<tr>
@@ -2002,6 +1696,7 @@ function updateJobFilter() {
   const sel=document.getElementById('mat-job-filter'), cur=sel.value;
   sel.innerHTML='<option value="all">All Jobs</option>'+jobs.map(j=>`<option value="${j.id}" ${cur===j.id?'selected':''}>${j.job_name}</option>`).join('');
 }
+
 function renderMatsView() {
   const sf=document.getElementById('mat-filter').value, jf=document.getElementById('mat-job-filter').value;
   let mats=allMats;
@@ -2012,7 +1707,7 @@ function renderMatsView() {
   document.getElementById('ms-received').textContent = allMats.filter(m=>m.status==='Received').length;
   const tot=allMats.reduce((s,m)=>s+parseFloat(m.est_cost||0),0);
   document.getElementById('ms-cost').textContent='$'+tot.toLocaleString(undefined,{maximumFractionDigits:0});
-  const bc=s=>({Needed:'needed',Ordered:'ordered',Received:'received','Partially Received':'ordered'}[s]||'pending');
+  const bc=s=>({Needed:'needed','On Hand':'onhand',Ordered:'ordered',Received:'received','Partially Received':'ordered'}[s]||'pending');
   document.getElementById('mat-all-tbody').innerHTML=mats.map(m=>`<tr>
     <td style="font-weight:600;color:var(--teal-dark);font-size:12px;cursor:pointer" onclick="openJob('${m.job_id}')">${m.jobs?.job_name||'—'}</td>
     <td>${m.name||'—'}</td><td style="text-align:center">${m.qty_needed||'—'}</td><td style="text-align:center">${m.qty_ordered||'—'}</td>
@@ -2027,14 +1722,15 @@ function renderMatsView() {
 }
 
 // ── NEW JOB ───────────────────────────────────────────────────────────────
-function openNewJobModal(){document.getElementById('modal-new-job').classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-async function createJob(){
+function openNewJobModal(){ document.getElementById('modal-new-job').classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+async function createJob() {
   const name=document.getElementById('nj-name').value.trim();
-  if(!name){alert('Please enter a job name.');return;}
+  if (!name) { alert('Please enter a job name.'); return; }
   const job={job_name:name,job_number:document.getElementById('nj-num').value||`GG-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`,builder:document.getElementById('nj-builder').value,address:document.getElementById('nj-address').value,status:document.getElementById('nj-status').value,start_date:document.getElementById('nj-start').value||null,end_date:document.getElementById('nj-end').value||null,foreman:document.getElementById('nj-foreman').value,created_by:currentUser.id};
-  const { data, error }=await sb.from('jobs').insert(job).select().single();
-  if(error){showToast('Error: '+error.message,true);return;}
+  const { data,error }=await sb.from('jobs').insert(job).select().single();
+  if (error) { showToast('Error: '+error.message,true); return; }
   closeModal('modal-new-job');
   ['nj-name','nj-num','nj-builder','nj-address','nj-start','nj-end','nj-foreman'].forEach(id=>document.getElementById(id).value='');
   showToast('✓ Job created');
@@ -2043,14 +1739,12 @@ async function createJob(){
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────
-function togglePanel(el){el.classList.toggle('collapsed');}
-function esc(v){return(v||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-function emptyRow(cols,msg){return`<tr><td colspan="${cols}" style="text-align:center;padding:20px;color:var(--muted);font-size:12px">${msg}</td></tr>`;}
-function setLoading(show,text='Loading...'){document.getElementById('loading').classList.toggle('show',show);document.getElementById('loading-text').textContent=text;}
-function setSaveInd(state){const el=document.getElementById('save-ind');if(state==='saving'){el.textContent='● Saving…';el.className='save-indicator saving';}if(state==='saved'){el.textContent='✓ Saved';el.className='save-indicator saved';clearTimeout(saveTimer);saveTimer=setTimeout(()=>{el.textContent='';},2000);}}
-function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast${err?' terror':''} show`;setTimeout(()=>t.classList.remove('show'),2800);}
-
-document.getElementById('modal-new-job').addEventListener('click',function(e){if(e.target===this)closeModal('modal-new-job');});
+function togglePanel(el){ el.classList.toggle('collapsed'); }
+function esc(v){ return(v||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function emptyRow(cols,msg){ return`<tr><td colspan="${cols}" style="text-align:center;padding:20px;color:var(--muted);font-size:12px">${msg}</td></tr>`; }
+function setLoading(show,text='Loading...'){ document.getElementById('loading').classList.toggle('show',show); document.getElementById('loading-text').textContent=text; }
+function setSaveInd(state){ const el=document.getElementById('save-ind'); if(state==='saving'){el.textContent='● Saving…';el.className='save-indicator saving';} if(state==='saved'){el.textContent='✓ Saved';el.className='save-indicator saved';clearTimeout(saveTimer);saveTimer=setTimeout(()=>{el.textContent='';},2000);} }
+function showToast(msg,err=false){ const t=document.getElementById('toast');t.textContent=msg;t.className=`toast${err?' terror':''} show`;setTimeout(()=>t.classList.remove('show'),2800); }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 checkSession();
