@@ -1082,7 +1082,7 @@ function renderCalendar() {
   for (let i=firstDay-1;i>=0;i--) cells.push({day:daysInPrev-i,month:calMonth-1,year:calYear,other:true});
   for (let d=1;d<=daysInMonth;d++) cells.push({day:d,month:calMonth,year:calYear,other:false});
   let next=1; while(cells.length%7!==0) cells.push({day:next++,month:calMonth+1,year:calYear,other:true});
-  const dotMap = { start:'dot-start', end:'dot-end', insp:'dot-insp', billing:'dot-billing' };
+  const dotMap = { start:'dot-start', end:'dot-end', insp:'dot-insp', billing:'dot-billing', task:'dot-task' };
   gridEl.innerHTML = cells.map(cell => {
     const dateStr = `${cell.year}-${String(cell.month+1).padStart(2,'0')}-${String(cell.day).padStart(2,'0')}`;
     const isToday = !cell.other && new Date(cell.year,cell.month,cell.day).getTime()===today.getTime();
