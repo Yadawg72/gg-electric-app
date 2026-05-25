@@ -1052,7 +1052,20 @@ async function loadCalendarEvents() {
       calEvents.push({ date:insp.scheduled_date, type:'insp', jobId:insp.job_id, jobName:job?.job_name||'Unknown', label:insp.item||'Inspection' });
     }
   }
+  // Tasks with due dates
+  if (jobs.length > 0) {
+    const { data:tasks } = await sb.from('tasks')
+      .select('due_date, description, job_id, status')
+      .in('job_id', jobs.map(j=>j.id))
+      .not('due_date','is',null)
+      .neq('status','Complete');
+    for (const task of tasks||[]) {
+      const job = jobs.find(j=>j.id===task.job_id);
+      calEvents.push({ date:task.due_date, type:'task', jobId:task.job_id, jobName:job?.job_name||'Unknown', label:task.description||'Task Due' });
+    }
+  }
   renderCalendar();
+}
 }
 
 function renderCalendar() {
