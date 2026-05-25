@@ -1341,38 +1341,127 @@ function copyCredentials() {
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
+let dashQuickFilters = { billing: false, tasks: false, materials: false, starting: false, ending: false };
+let dashTaskCounts   = {};
+let dashMatCounts    = {};
+
 function renderDashboard() {
   document.getElementById('s-total').textContent  = jobs.length;
   document.getElementById('s-active').textContent = jobs.filter(j=>j.status==='Active').length;
   document.getElementById('s-hold').textContent   = jobs.filter(j=>j.status==='On Hold').length;
   document.getElementById('s-done').textContent   = jobs.filter(j=>j.status==='Complete').length;
+  populateBuilderFilter();
+  loadDashboardCounts().then(() => applyDashFilters());
+}
+
+function populateBuilderFilter() {
+  const sel = document.getElementById('dash-builder');
+  if (!sel) return;
+  const cur = sel.value;
+  const builders = [...new Set(jobs.map(j=>j.builder).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">All Builders</option>' +
+    builders.map(b=>`<option value="${b}" ${cur===b?'selected':''}>${b}</option>`).join('');
+}
+
+async function loadDashboardCounts() {
+  dashTaskCounts = {}; dashMatCounts = {};
+  for (const j of jobs) {
+    const [t, m] = await Promise.all([
+      sb.from('tasks').select('id,status').eq('job_id',j.id),
+      sb.from('materials').select('id,status').eq('job_id',j.id),
+    ]);
+    dashTaskCounts[j.id] = (t.data||[]).filter(r=>r.status!=='Complete').length;
+    dashMatCounts[j.id]  = (m.data||[]).filter(r=>r.status==='Needed').length;
+  }
+}
+
+function applyDashFilters() {
+  const search  = (document.getElementById('dash-search')?.value||'').toLowerCase().trim();
+  const status  = document.getElementById('dash-status')?.value  || 'all';
+  const builder = document.getElementById('dash-builder')?.value || 'all';
+  const sortVal = document.getElementById('dash-sort')?.value    || 'created_desc';
+
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const weekEnd  = new Date(today); weekEnd.setDate(today.getDate()+7);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth()+1, 0);
+
+  let filtered = jobs.filter(j => {
+    if (search && !`${j.job_name||''} ${j.job_number||''} ${j.builder||''}`.toLowerCase().includes(search)) return false;
+    if (status !== 'all' && j.status !== status) return false;
+    if (builder !== 'all' && j.builder !== builder) return false;
+    if (dashQuickFilters.billing) {
+      if (!j.billing_frequency || j.billing_frequency === 'end_of_job' || !j.last_billed_date) return false;
+      const last = new Date(j.last_billed_date);
+      const days = Math.floor((today - last)/(1000*60*60*24));
+      const overdue = (j.billing_frequency==='weekly' && days>=7) || (j.billing_frequency==='monthly' && days>=30);
+      if (!overdue) return false;
+    }
+    if (dashQuickFilters.tasks     && !(dashTaskCounts[j.id]>0)) return false;
+    if (dashQuickFilters.materials && !(dashMatCounts[j.id]>0))  return false;
+    if (dashQuickFilters.starting) {
+      if (!j.start_date) return false;
+      const sd = new Date(j.start_date);
+      if (sd < today || sd > weekEnd) return false;
+    }
+    if (dashQuickFilters.ending) {
+      if (!j.end_date) return false;
+      const ed = new Date(j.end_date);
+      if (ed < today || ed > monthEnd) return false;
+    }
+    return true;
+  });
+
+  filtered = [...filtered].sort((a,b) => {
+    const safe = v => v||'';
+    switch(sortVal) {
+      case 'name_asc':     return safe(a.job_name).localeCompare(safe(b.job_name));
+      case 'name_desc':    return safe(b.job_name).localeCompare(safe(a.job_name));
+      case 'builder_asc':  return safe(a.builder).localeCompare(safe(b.builder));
+      case 'start_asc':    return (a.start_date||'9999') > (b.start_date||'9999') ? 1 : -1;
+      case 'start_desc':   return (a.start_date||'') < (b.start_date||'') ? 1 : -1;
+      case 'end_asc':      return (a.end_date||'9999') > (b.end_date||'9999') ? 1 : -1;
+      case 'end_desc':     return (a.end_date||'') < (b.end_date||'') ? 1 : -1;
+      case 'created_asc':  return (a.created_at||'') > (b.created_at||'') ? 1 : -1;
+      case 'created_desc': default: return (a.created_at||'') < (b.created_at||'') ? 1 : -1;
+    }
+  });
+
+  const rc = document.getElementById('dash-result-count');
+  if (rc) rc.textContent = filtered.length === jobs.length
+    ? `Showing all ${jobs.length} jobs`
+    : `Showing ${filtered.length} of ${jobs.length} jobs`;
+
   const bc = s => { const m={Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}; return 'badge-'+(m[s]||'pending'); };
-  document.getElementById('dash-tbody').innerHTML = jobs.map(j=>`<tr onclick="openJob('${j.id}')">
+  document.getElementById('dash-tbody').innerHTML = filtered.map(j=>`<tr onclick="openJob('${j.id}')">
     <td><div class="job-name-cell">🏗 ${j.job_name||'Unnamed'}</div></td>
     <td class="job-num-cell">${j.job_number||'—'}</td>
     <td>${j.builder||'—'}</td>
     <td><span class="badge ${bc(j.status)}">${j.status||'Pending'}</span></td>
     <td style="color:var(--muted);font-size:12px">${j.start_date||'—'}</td>
     <td style="color:var(--muted);font-size:12px">${j.end_date||'—'}</td>
-    <td id="dash-tasks-${j.id}">—</td>
-    <td id="dash-mats-${j.id}">—</td>
-  </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">No jobs yet. Create your first job!</td></tr>';
-  loadDashboardCounts();
+    <td>${dashTaskCounts[j.id]>0 ? `<span class="badge badge-pending">${dashTaskCounts[j.id]} open</span>` : '<span style="color:var(--muted);font-size:12px">None</span>'}</td>
+    <td>${dashMatCounts[j.id]>0  ? `<span class="badge badge-needed">${dashMatCounts[j.id]} needed</span>` : '<span style="color:var(--muted);font-size:12px">None</span>'}</td>
+  </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">No jobs match your filters.</td></tr>';
 }
 
-async function loadDashboardCounts() {
-  for (const j of jobs) {
-    const [t, m] = await Promise.all([
-      sb.from('tasks').select('id,status').eq('job_id',j.id),
-      sb.from('materials').select('id,status').eq('job_id',j.id),
-    ]);
-    const openT = (t.data||[]).filter(r=>r.status!=='Complete').length;
-    const needM = (m.data||[]).filter(r=>r.status==='Needed').length;
-    const te = document.getElementById('dash-tasks-'+j.id);
-    const me = document.getElementById('dash-mats-'+j.id);
-    if (te) te.innerHTML = openT ? `<span class="badge badge-pending">${openT} open</span>` : '<span style="color:var(--muted);font-size:12px">None</span>';
-    if (me) me.innerHTML = needM ? `<span class="badge badge-needed">${needM} needed</span>` : '<span style="color:var(--muted);font-size:12px">None</span>';
-  }
+function toggleQuickFilter(key) {
+  dashQuickFilters[key] = !dashQuickFilters[key];
+  const btn = document.getElementById('qf-'+key);
+  if (btn) btn.classList.toggle('active', dashQuickFilters[key]);
+  applyDashFilters();
+}
+
+function clearDashFilters() {
+  document.getElementById('dash-search').value  = '';
+  document.getElementById('dash-status').value  = 'all';
+  document.getElementById('dash-builder').value = 'all';
+  document.getElementById('dash-sort').value    = 'created_desc';
+  Object.keys(dashQuickFilters).forEach(k => {
+    dashQuickFilters[k] = false;
+    const btn = document.getElementById('qf-'+k);
+    if (btn) btn.classList.remove('active');
+  });
+  applyDashFilters();
 }
 
 // ── OPEN JOB ──────────────────────────────────────────────────────────────
