@@ -1598,16 +1598,60 @@ let pendingSuggestions=[];
 let editingReportId=null;
 
 function openDailyReportModal() {
-  editingReportId=null;
-  document.querySelector('#modal-daily-report h2').textContent='Daily Field Report';
-  document.querySelector('#modal-daily-report .btn-primary').textContent='Submit Report';
-  document.querySelector('#modal-daily-report .btn-primary').setAttribute('onclick','submitDailyReport()');
-  document.getElementById('dr-date').value=new Date().toISOString().split('T')[0];
-  ['dr-employee','dr-work','dr-materials-used','dr-materials-needed'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('dr-hours').value='';
-  document.getElementById('dr-overtime').value='false';
-  document.getElementById('dr-photo').value='';
+  editingReportId = null;
+  document.getElementById('dr-modal-title').textContent = 'Daily Field Report';
+  document.getElementById('dr-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('dr-location').value = '';
+  document.getElementById('dr-work').value = '';
+  document.getElementById('dr-materials-used').value = '';
+  document.getElementById('dr-materials-needed').value = '';
+  document.getElementById('dr-notes').value = '';
+  document.getElementById('dr-photo-scan').value = '';
+  document.getElementById('dr-photo-preview').style.display = 'none';
+  document.getElementById('dr-ai-banner').style.display = 'none';
+  document.getElementById('dr-reading-status').style.display = 'none';
+  // Reset hours to one empty row
+  resetDrHoursRows();
   document.getElementById('modal-daily-report').classList.add('open');
+}
+
+function resetDrHoursRows() {
+  const list = document.getElementById('dr-hours-list');
+  list.innerHTML = '';
+  addDrHoursRow();
+}
+
+function addDrHoursRow(name='', hours='', overtime=false) {
+  const list = document.getElementById('dr-hours-list');
+  const idx  = list.children.length;
+  const row  = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;';
+  row.innerHTML = `
+    <input type="text" placeholder="Employee name" value="${name}"
+      style="flex:2;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;">
+    <input type="number" placeholder="Hrs" value="${hours}" step="0.5" min="0"
+      style="width:70px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;text-align:center;">
+    <select style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:12px;">
+      <option value="false" ${!overtime?'selected':''}>Regular</option>
+      <option value="true"  ${overtime?'selected':''}>OT</option>
+    </select>
+    <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 6px;">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function getDrHoursRows() {
+  const rows = document.getElementById('dr-hours-list').children;
+  const result = [];
+  for (const row of rows) {
+    const inputs  = row.querySelectorAll('input');
+    const select  = row.querySelector('select');
+    const name    = inputs[0].value.trim();
+    const hours   = parseFloat(inputs[1].value) || 0;
+    const overtime= select.value === 'true';
+    if (name && hours > 0) result.push({ name, hours, overtime });
+  }
+  return result;
 }
 
 async function submitDailyReport() {
