@@ -857,19 +857,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
 <!-- SUGGESTIONS MODAL -->
 <div class="modal-overlay" id="modal-suggestions">
-  <div class="modal" style="max-width:600px;">
-    <h2>Apply These Updates?</h2>
-    <p style="color:var(--mid);font-size:13px;margin-bottom:20px;">Review and approve which updates to apply based on this daily report:</p>
-    <div id="suggestions-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;"></div>
+  <div class="modal" style="max-width:680px;">
+    <h2>Review Daily Report Updates</h2>
+    <p style="color:var(--mid);font-size:13px;margin-bottom:8px;">Claude parsed your field report. Review each item below — green items are high confidence matches, yellow need your review, red had no match found.</p>
+    <div style="display:flex;gap:16px;margin-bottom:16px;font-size:11px;flex-wrap:wrap;">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#3a9e6f;display:inline-block;"></span> High confidence (auto-matched)</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#c07a1a;display:inline-block;"></span> Low confidence (review needed)</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#c0392b;display:inline-block;"></span> No match found</span>
+    </div>
+    <div id="suggestions-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;max-height:50vh;overflow-y:auto;"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-suggestions')">Skip All</button>
       <button class="btn btn-primary" onclick="applySuggestions()">Apply Selected</button>
     </div>
   </div>
 </div>
-
-<div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-text" id="loading-text">Loading...</div></div>
-<div class="toast" id="toast"></div>
 
 <script>
 // ── SUPABASE ──────────────────────────────────────────────────────────────
