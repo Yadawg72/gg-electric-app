@@ -1688,13 +1688,44 @@ Respond ONLY with a JSON array, no other text. Example:
   }
 }
 
-function showSuggestions() {
-  document.getElementById('suggestions-list').innerHTML=pendingSuggestions.map((s,i)=>`
-    <label style="display:flex;align-items:start;gap:10px;padding:12px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
-      <input type="checkbox" id="sug-${i}" checked style="margin-top:2px;cursor:pointer;">
-      <div style="flex:1;font-size:13px;color:var(--charcoal);">${s.label}</div>
-    </label>`).join('');
-  document.getElementById('modal-suggestions').classList.add('open');
+function fuzzyMatchPriceList(name) {
+  if (!priceList.length) return null;
+  const normalize = s => s.toUpperCase()
+    .replace(/[^A-Z0-9\s\/\-\.\"#]/g,'')
+    .replace(/\s+/g,' ').trim();
+  const target = normalize(name);
+
+  let best = null, bestScore = 0;
+
+  for (const item of priceList) {
+    const candidate = normalize(item.item_name);
+    const score = similarityScore(target, candidate);
+    if (score > bestScore) { bestScore = score; best = item; }
+  }
+
+  return bestScore > 0.3 ? { item: best, confidence: bestScore } : null;
+}
+
+function similarityScore(a, b) {
+  if (a === b) return 1.0;
+  if (a.includes(b) || b.includes(a)) return 0.85;
+
+  const aWords = a.split(' ');
+  const bWords = b.split(' ');
+  const aSet   = new Set(aWords);
+  const bSet   = new Set(bWords);
+  let matches  = 0;
+  for (const w of aSet) { if (bSet.has(w)) matches++; }
+
+  const wordScore = (2 * matches) / (aWords.length + bWords.length);
+
+  // Bonus for matching numbers/sizes exactly
+  const aNums = a.match(/[\d\/\-\.\"#]+/g) || [];
+  const bNums = b.match(/[\d\/\-\.\"#]+/g) || [];
+  const numMatches = aNums.filter(n => bNums.includes(n)).length;
+  const numBonus = aNums.length > 0 ? (numMatches / aNums.length) * 0.3 : 0;
+
+  return Math.min(1.0, wordScore + numBonus);
 }
 
 async function applySuggestions() {
