@@ -1655,53 +1655,80 @@ function getDrHoursRows() {
 }
 
 async function submitDailyReport() {
-  const date     = document.getElementById('dr-date').value;
-  const employee = document.getElementById('dr-employee').value.trim();
-  const hours    = parseFloat(document.getElementById('dr-hours').value)||0;
-  const overtime = document.getElementById('dr-overtime').value === 'true';
-  const work     = document.getElementById('dr-work').value.trim();
-  const mUsed    = document.getElementById('dr-materials-used').value.trim();
-  const mNeeded  = document.getElementById('dr-materials-needed').value.trim();
-  const photoFile= document.getElementById('dr-photo').files[0];
+  const date      = document.getElementById('dr-date').value;
+  const location  = document.getElementById('dr-location').value.trim();
+  const work      = document.getElementById('dr-work').value.trim();
+  const mUsed     = document.getElementById('dr-materials-used').value.trim();
+  const mNeeded   = document.getElementById('dr-materials-needed').value.trim();
+  const notes     = document.getElementById('dr-notes').value.trim();
+  const hoursRows = getDrHoursRows();
 
-  if (!date||!employee||hours<=0) { showToast('Please fill in date, employee, and hours',true); return; }
+  if (!date) { showToast('Please enter a date', true); return; }
+  if (hoursRows.length === 0) { showToast('Please add at least one employee with hours', true); return; }
 
-  setLoading(true,'Saving report...');
+  setLoading(true, 'Saving report...');
 
+  // Upload photo if present
   let photoUrl = null;
+  const photoFile = document.getElementById('dr-photo-scan').files[0];
   if (photoFile) {
     const path = `${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
     const { error:upErr } = await sb.storage.from('job-files').upload(path, photoFile);
-    if (!upErr) { const { data:ud } = await sb.storage.from('job-files').getPublicUrl(path); photoUrl = ud.publicUrl; }
+    if (!upErr) {
+      const { data:ud } = await sb.storage.from('job-files').getPublicUrl(path);
+      photoUrl = ud.publicUrl;
+    }
   }
 
-  const { error } = await sb.from('daily_reports').insert({
-    job_id:currentJobId, report_date:date, employee_name:employee,
-    hours_worked:hours, overtime, work_completed:work,
-    materials_used:mUsed, materials_needed:mNeeded,
-    photo_url:photoUrl, created_by:currentUser.id
-  });
+  // Build employee names summary for display
+  const employeeSummary = hoursRows.map(r=>`${r.name} (${r.hours}h${r.overtime?' OT':''})`).join(', ');
+  const totalHours = hoursRows.reduce((s,r)=>s+r.hours, 0);
+
+  // Save report
+  const { data:report, error } = await sb.from('daily_reports').insert({
+    job_id:       currentJobId,
+    report_date:  date,
+    employee_name:employeeSummary,
+    hours_worked: totalHours,
+    overtime:     hoursRows.some(r=>r.overtime),
+    work_completed: work,
+    materials_used: mUsed,
+    materials_needed: mNeeded,
+    photo_url:    photoUrl,
+    created_by:   currentUser.id
+  }).select().single();
+
+  if (error) { setLoading(false); showToast('Error: '+error.message, true); return; }
+
+  // Save per-employee hours to daily_report_hours table
+  for (const emp of hoursRows) {
+    await sb.from('daily_report_hours').insert({
+      report_id:    report.id,
+      employee_name:emp.name,
+      hours_worked: emp.hours,
+      overtime:     emp.overtime
+    });
+
+    // Also log to hours_logged table for the job
+    await sb.from('hours_logged').insert({
+      job_id:        currentJobId,
+      employee_name: emp.name,
+      work_date:     date,
+      hours:         emp.hours,
+      overtime:      emp.overtime,
+      work_performed:work
+    });
+  }
 
   setLoading(false);
-  if (error) { showToast('Error: '+error.message,true); return; }
-
   showToast('Daily report saved!');
   closeModal('modal-daily-report');
   loadDailyReports();
+  loadHours();
 
-  // If no materials at all, just add hours suggestion and show
-  if (!mUsed && !mNeeded) {
-    pendingSuggestions = [];
-    if (hours > 0) pendingSuggestions.push({
-      type:'hours', confidence:'high',
-      label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,
-      data:{ job_id:currentJobId, employee_name:employee, work_date:date, hours, overtime, work_performed:work }
-    });
-    if (pendingSuggestions.length > 0) showSuggestions();
-    return;
-  }
+  // Parse materials if any
+  if (!mUsed && !mNeeded) return;
 
-  // Parse materials with Claude API
   setLoading(true, 'Analyzing materials...');
   try {
     const parsePrompt = `You are parsing a field electrician's handwritten daily report into structured data.
@@ -1720,8 +1747,7 @@ ${mUsed || '(none)'}
 Materials Needed:
 ${mNeeded || '(none)'}
 
-Respond ONLY with a JSON array, no other text. Example:
-[{"name":"#12 THHN RED","qty":500,"unit":"LF","action":"used"},{"name":"20A DUPLEX RECEPTACLE","qty":6,"unit":"EA","action":"needed"}]`;
+Respond ONLY with a JSON array, no other text.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1729,7 +1755,7 @@ Respond ONLY with a JSON array, no other text. Example:
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        messages: [{ role: 'user', content: parsePrompt }]
+        messages: [{ role:'user', content:parsePrompt }]
       })
     });
 
@@ -1738,67 +1764,40 @@ Respond ONLY with a JSON array, no other text. Example:
     const clean   = rawText.replace(/```json|```/g,'').trim();
     const parsed  = JSON.parse(clean);
 
-    // Fuzzy match each parsed item against price list
     pendingSuggestions = [];
-
-    // Hours suggestion first
-    if (hours > 0) pendingSuggestions.push({
-      type:'hours', confidence:'high',
-      label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,
-      data:{ job_id:currentJobId, employee_name:employee, work_date:date, hours, overtime, work_performed:work }
-    });
-
     for (const item of parsed) {
-      const match = fuzzyMatchPriceList(item.name);
-      const status = item.action === 'used' ? 'Received' : 'Needed';
-      const estCost = (match && match.confidence >= 0.8 && match.item.unit_price)
-        ? (item.qty * match.item.unit_price).toFixed(2)
-        : null;
+      const match   = fuzzyMatchPriceList(item.name);
+      const status  = item.action==='used' ? 'Received' : 'Needed';
+      const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
+        ? (item.qty * match.item.unit_price).toFixed(2) : null;
 
       pendingSuggestions.push({
-        type: item.action === 'used' ? 'material_used' : 'material_needed',
-        confidence: match ? match.confidence : 0,
-        parsedName: item.name,
-        qty: item.qty,
-        unit: item.unit,
-        label: `${item.qty} ${item.unit} — ${item.name}`,
+        type:        item.action==='used' ? 'material_used' : 'material_needed',
+        confidence:  match ? match.confidence : 0,
+        parsedName:  item.name,
+        qty:         item.qty,
+        unit:        item.unit,
+        label:       `${item.qty} ${item.unit} — ${item.name}`,
         matchedItem: match ? match.item : null,
         estCost,
         data: {
-          job_id: currentJobId,
-          name: match && match.confidence >= 0.8 ? match.item.item_name : item.name,
-          qty_needed: item.qty,
+          job_id:    currentJobId,
+          name:      match && match.confidence>=0.8 ? match.item.item_name : item.name,
+          qty_needed:item.qty,
           status,
-          est_cost: estCost,
-          sort_order: 999
+          est_cost:  estCost,
+          sort_order:999
         }
       });
     }
 
     setLoading(false);
-    showSuggestions();
+    if (pendingSuggestions.length > 0) showSuggestions();
 
   } catch(err) {
     setLoading(false);
     console.error('Parse error:', err);
-    // Fall back to simple suggestions
-    pendingSuggestions = [];
-    if (hours > 0) pendingSuggestions.push({
-      type:'hours', confidence:'high',
-      label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,
-      data:{ job_id:currentJobId, employee_name:employee, work_date:date, hours, overtime, work_performed:work }
-    });
-    mUsed.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({
-      type:'material_used', confidence:0, parsedName:line.trim(), qty:1, unit:'EA',
-      label:line.trim(), matchedItem:null, estCost:null,
-      data:{ job_id:currentJobId, name:line.trim(), status:'Received', sort_order:999 }
-    }));
-    mNeeded.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({
-      type:'material_needed', confidence:0, parsedName:line.trim(), qty:1, unit:'EA',
-      label:line.trim(), matchedItem:null, estCost:null,
-      data:{ job_id:currentJobId, name:line.trim(), status:'Needed', sort_order:999 }
-    }));
-    showSuggestions();
+    showToast('Materials saved but could not auto-parse — add manually', true);
   }
 }
   
