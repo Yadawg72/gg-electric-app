@@ -896,15 +896,14 @@ sb.auth.onAuthChange((event, session) => {
 });
 
 // ── STATE ─────────────────────────────────────────────────────────────────
-let currentUser  = null;
-let currentJobId = null;
-let jobs         = [];
-let allMats      = [];
-let priceList    = [];
-let noteTimer    = null;
-let saveTimer    = null;
-}
-
+  let currentUser  = null;
+  let currentJobId = null;
+  let jobs         = [];
+  let allMats      = [];
+  let priceList    = [];
+  let noteTimer    = null;
+  let saveTimer    = null;
+  
 // ── AUTH ──────────────────────────────────────────────────────────────────
 async function signIn() {
   const email = document.getElementById('login-email').value.trim();
