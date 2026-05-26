@@ -892,7 +892,16 @@ const sb = supabase.createClient(
 })();
 
 sb.auth.onAuthStateChange((event, session) => {
-  if (session && !currentUser) { currentUser = session.user; bootApp(); }
+  if (session && !currentUser) {
+    currentUser = session.user;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    const email = currentUser.email;
+    document.getElementById('u-avatar').textContent = email.substring(0,2).toUpperCase();
+    document.getElementById('u-email').textContent  = email;
+    loadJobs();
+    loadPriceList();
+  }
 });
 
 // ── STATE ─────────────────────────────────────────────────────────────────
