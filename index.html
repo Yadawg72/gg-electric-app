@@ -2214,7 +2214,12 @@ async function createJob() {
 function togglePanel(el){ el.classList.toggle('collapsed'); }
 function esc(v){ return(v||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function emptyRow(cols,msg){ return`<tr><td colspan="${cols}" style="text-align:center;padding:20px;color:var(--muted);font-size:12px">${msg}</td></tr>`; }
-function setLoading(show,text='Loading...'){ document.getElementById('loading').classList.toggle('show',show); document.getElementById('loading-text').textContent=text; }
+function setLoading(show,text='Loading...'){
+  const el=document.getElementById('loading');
+  const tx=document.getElementById('loading-text');
+  if(el) el.classList.toggle('show',show);
+  if(tx) tx.textContent=text;
+}
 function setSaveInd(state){ const el=document.getElementById('save-ind'); if(state==='saving'){el.textContent='● Saving…';el.className='save-indicator saving';} if(state==='saved'){el.textContent='✓ Saved';el.className='save-indicator saved';clearTimeout(saveTimer);saveTimer=setTimeout(()=>{el.textContent='';},2000);} }
 function showToast(msg,err=false){ const t=document.getElementById('toast');t.textContent=msg;t.className=`toast${err?' terror':''} show`;setTimeout(()=>t.classList.remove('show'),2800); }
 
