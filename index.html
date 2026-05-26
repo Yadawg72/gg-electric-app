@@ -891,14 +891,14 @@ const sb = supabase.createClient(
   }
 })();
 
-sb.auth.onAuthChange((event, session) => {
+sb.auth.onAuthStateChange((event, session) => {
   if (session && !currentUser) { currentUser = session.user; bootApp(); }
 });
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 let currentUser  = null;
 let currentJobId = null;
-let jobs         = []
+let jobs         = [];
 let allMats      = [];
 let priceList    = [];
 let noteTimer    = null;
