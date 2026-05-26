@@ -559,7 +559,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
                 <label>Status:</label>
                 <select id="mat-filter" onchange="renderMatsView()">
                   <option value="all">All</option><option value="Needed">Needed</option>
-                  <option value="On Hand">On Hand</option><option value="Ordered">Ordered</option>
+                  <option value="Partially Received">Partially Received</option><option value="Received">Received</option><option value="Used">Used</option>
                   <option value="Partially Received">Partially Received</option><option value="Received">Received</option>
                 </select>
                 <label style="margin-left:10px">Job:</label>
@@ -1551,7 +1551,7 @@ async function loadMaterials() {
     <td><input type="number" value="${r.actual_cost||''}" placeholder="0.00" style="text-align:right" onchange="uRow('materials','actual_cost','${r.id}',this.value);loadMaterials()"></td>
     <td><input type="date" value="${r.delivery_date||''}" onchange="uRow('materials','delivery_date','${r.id}',this.value)"></td>
     <td><select onchange="uRow('materials','status','${r.id}',this.value)">
-      ${['Needed','On Hand','Ordered','Partially Received','Received','N/A'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+      ${['Needed','On Hand','Ordered','Partially Received','Received','Used','N/A'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
     </select></td>
     <td><button class="del-btn" onclick="dRow('materials','${r.id}',loadMaterials)">✕</button></td>
   </tr>`).join('')||emptyRow(12,'No materials yet');
@@ -1820,7 +1820,7 @@ Respond ONLY with a JSON array, no other text.`;
     pendingSuggestions = [];
     for (const item of parsed) {
       const match   = fuzzyMatchPriceList(item.name);
-      const status  = item.action==='used' ? 'Received' : 'Needed';
+      const status  = item.action==='used' ? 'Used' : 'Needed';
       const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
         ? (item.qty * match.item.unit_price).toFixed(2) : null;
 
@@ -1993,7 +1993,7 @@ async function loadTally() {
   const { data } = await sb.from('materials')
     .select('*')
     .eq('job_id', currentJobId)
-    .in('status', ['Received','On Hand','Partially Received']);
+    .in('status', ['Used']);
 
   const rows = data || [];
   if (!rows.length) {
@@ -2461,7 +2461,7 @@ function renderMatsView() {
   document.getElementById('ms-received').textContent = allMats.filter(m=>m.status==='Received').length;
   const tot=allMats.reduce((s,m)=>s+parseFloat(m.est_cost||0),0);
   document.getElementById('ms-cost').textContent='$'+tot.toLocaleString(undefined,{maximumFractionDigits:0});
-  const bc=s=>({Needed:'needed','On Hand':'onhand',Ordered:'ordered',Received:'received','Partially Received':'ordered'}[s]||'pending');
+  const bc=s=>({Needed:'needed','On Hand':'onhand',Ordered:'ordered',Received:'received','Partially Received':'ordered',Used:'active'}[s]||'pending');
   document.getElementById('mat-all-tbody').innerHTML=mats.map(m=>`<tr>
     <td style="font-weight:600;color:var(--teal-dark);font-size:12px;cursor:pointer" onclick="openJob('${m.job_id}')">${m.jobs?.job_name||'—'}</td>
     <td>${m.name||'—'}</td><td style="text-align:center">${m.qty_needed||'—'}</td><td style="text-align:center">${m.qty_ordered||'—'}</td>
