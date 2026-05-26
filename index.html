@@ -2300,11 +2300,14 @@ async function loadDailyReports() {
     const hrs = r.daily_report_hours || [];
     const totalHrs = hrs.reduce((s,h)=>s+parseFloat(h.hours_worked||0),0);
     const hrsHtml = hrs.length > 0
-      ? hrs.map(h=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-light);">
-          <span style="font-size:12px;color:var(--charcoal);">${h.employee_name}</span>
-          <span style="font-size:12px;font-weight:600;color:var(--teal-dark);">${h.hours_worked}h${h.overtime?' <span style="color:var(--warning);font-size:10px;">OT</span>':''}</span>
-        </div>`).join('')
-      : `<div style="font-size:12px;color:var(--muted);">${r.employee_name} — ${r.hours_worked}h</div>`;
+        ? hrs.map(h=>{
+            const otBadge = h.overtime ? ' <b style="color:var(--warning);font-size:10px;">OT</b>' : '';
+            return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border-light);">'
+              + '<span style="font-size:12px;color:var(--charcoal);">' + h.employee_name + '</span>'
+              + '<span style="font-size:12px;font-weight:600;color:var(--teal-dark);">' + h.hours_worked + 'h' + otBadge + '</span>'
+              + '</div>';
+          }).join('')
+        : '<div style="font-size:12px;color:var(--muted);">' + r.employee_name + ' — ' + r.hours_worked + 'h</div>';
 
     return `
     <div style="padding:14px;background:var(--bg);border-radius:var(--radius);border-left:3px solid var(--teal);">
