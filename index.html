@@ -1448,6 +1448,7 @@ async function openJob(id) {
     renderInfoGrid(job);
     loadBillingInfo();
     loadDailyReports();
+    loadTally();
   }
   setLoading(true,'Loading job...');
   await Promise.all([loadTasks(),loadMaterials(),loadInspections(),loadHours(),loadContacts(),loadNotes(),loadPhotos(),loadDocs()]);
@@ -1554,7 +1555,8 @@ async function loadMaterials() {
       ${['Needed','On Hand','Ordered','Partially Received','Received','N/A'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
     </select></td>
     <td><button class="del-btn" onclick="dRow('materials','${r.id}',loadMaterials)">✕</button></td>
-  </tr>`).join('')||emptyRow(12,'No materials yet');
+    ).join('')||emptyRow(12,'No materials yet');
+    loadTally();
 }
 
 // ── INSPECTIONS ───────────────────────────────────────────────────────────
