@@ -1541,33 +1541,151 @@ function openDailyReportModal() {
 }
 
 async function submitDailyReport() {
-  const date=document.getElementById('dr-date').value;
-  const employee=document.getElementById('dr-employee').value.trim();
-  const hours=parseFloat(document.getElementById('dr-hours').value)||0;
-  const overtime=document.getElementById('dr-overtime').value==='true';
-  const work=document.getElementById('dr-work').value.trim();
-  const mUsed=document.getElementById('dr-materials-used').value.trim();
-  const mNeeded=document.getElementById('dr-materials-needed').value.trim();
-  const photoFile=document.getElementById('dr-photo').files[0];
+  const date     = document.getElementById('dr-date').value;
+  const employee = document.getElementById('dr-employee').value.trim();
+  const hours    = parseFloat(document.getElementById('dr-hours').value)||0;
+  const overtime = document.getElementById('dr-overtime').value === 'true';
+  const work     = document.getElementById('dr-work').value.trim();
+  const mUsed    = document.getElementById('dr-materials-used').value.trim();
+  const mNeeded  = document.getElementById('dr-materials-needed').value.trim();
+  const photoFile= document.getElementById('dr-photo').files[0];
+
   if (!date||!employee||hours<=0) { showToast('Please fill in date, employee, and hours',true); return; }
+
   setLoading(true,'Saving report...');
-  let photoUrl=null;
+
+  let photoUrl = null;
   if (photoFile) {
-    const path=`${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
-    const { error:upErr }=await sb.storage.from('job-files').upload(path,photoFile);
-    if (!upErr) { const { data:ud }=await sb.storage.from('job-files').getPublicUrl(path); photoUrl=ud.publicUrl; }
+    const path = `${currentJobId}/reports/${Date.now()}_${photoFile.name}`;
+    const { error:upErr } = await sb.storage.from('job-files').upload(path, photoFile);
+    if (!upErr) { const { data:ud } = await sb.storage.from('job-files').getPublicUrl(path); photoUrl = ud.publicUrl; }
   }
-  const { error }=await sb.from('daily_reports').insert({job_id:currentJobId,report_date:date,employee_name:employee,hours_worked:hours,overtime,work_completed:work,materials_used:mUsed,materials_needed:mNeeded,photo_url:photoUrl,created_by:currentUser.id});
+
+  const { error } = await sb.from('daily_reports').insert({
+    job_id:currentJobId, report_date:date, employee_name:employee,
+    hours_worked:hours, overtime, work_completed:work,
+    materials_used:mUsed, materials_needed:mNeeded,
+    photo_url:photoUrl, created_by:currentUser.id
+  });
+
   setLoading(false);
   if (error) { showToast('Error: '+error.message,true); return; }
+
   showToast('Daily report saved!');
   closeModal('modal-daily-report');
-  pendingSuggestions=[];
-  if (hours>0) pendingSuggestions.push({type:'hours',label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,data:{job_id:currentJobId,employee_name:employee,work_date:date,hours,overtime,work_performed:work}});
-  mUsed.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({type:'material_used',label:`Add as used: ${line.trim()}`,data:{job_id:currentJobId,name:line.trim(),status:'Received',sort_order:999}}));
-  mNeeded.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({type:'material_needed',label:`Add to materials list: ${line.trim()}`,data:{job_id:currentJobId,name:line.trim(),status:'Needed',sort_order:999}}));
-  if (pendingSuggestions.length>0) showSuggestions();
   loadDailyReports();
+
+  // If no materials at all, just add hours suggestion and show
+  if (!mUsed && !mNeeded) {
+    pendingSuggestions = [];
+    if (hours > 0) pendingSuggestions.push({
+      type:'hours', confidence:'high',
+      label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,
+      data:{ job_id:currentJobId, employee_name:employee, work_date:date, hours, overtime, work_performed:work }
+    });
+    if (pendingSuggestions.length > 0) showSuggestions();
+    return;
+  }
+
+  // Parse materials with Claude API
+  setLoading(true, 'Analyzing materials...');
+  try {
+    const parsePrompt = `You are parsing a field electrician's handwritten daily report into structured data.
+
+Parse EACH line from the materials lists below into JSON. For each item extract:
+- "name": clean material name (uppercase, no quantity/unit)
+- "qty": numeric quantity (default 1 if not specified)
+- "unit": "LF" for linear feet/ft, "EA" for each/count/pieces, default "EA"
+- "action": "used" or "needed"
+
+Common abbreviations: ft=LF, #=number/gauge, recept=receptacle, conn=connector, dup=duplex
+
+Materials Used:
+${mUsed || '(none)'}
+
+Materials Needed:
+${mNeeded || '(none)'}
+
+Respond ONLY with a JSON array, no other text. Example:
+[{"name":"#12 THHN RED","qty":500,"unit":"LF","action":"used"},{"name":"20A DUPLEX RECEPTACLE","qty":6,"unit":"EA","action":"needed"}]`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: parsePrompt }]
+      })
+    });
+
+    const apiData = await response.json();
+    const rawText = apiData.content?.[0]?.text || '[]';
+    const clean   = rawText.replace(/```json|```/g,'').trim();
+    const parsed  = JSON.parse(clean);
+
+    // Fuzzy match each parsed item against price list
+    pendingSuggestions = [];
+
+    // Hours suggestion first
+    if (hours > 0) pendingSuggestions.push({
+      type:'hours', confidence:'high',
+      label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,
+      data:{ job_id:currentJobId, employee_name:employee, work_date:date, hours, overtime, work_performed:work }
+    });
+
+    for (const item of parsed) {
+      const match = fuzzyMatchPriceList(item.name);
+      const status = item.action === 'used' ? 'Received' : 'Needed';
+      const estCost = (match && match.confidence >= 0.8 && match.item.unit_price)
+        ? (item.qty * match.item.unit_price).toFixed(2)
+        : null;
+
+      pendingSuggestions.push({
+        type: item.action === 'used' ? 'material_used' : 'material_needed',
+        confidence: match ? match.confidence : 0,
+        parsedName: item.name,
+        qty: item.qty,
+        unit: item.unit,
+        label: `${item.qty} ${item.unit} — ${item.name}`,
+        matchedItem: match ? match.item : null,
+        estCost,
+        data: {
+          job_id: currentJobId,
+          name: match && match.confidence >= 0.8 ? match.item.item_name : item.name,
+          qty_needed: item.qty,
+          status,
+          est_cost: estCost,
+          sort_order: 999
+        }
+      });
+    }
+
+    setLoading(false);
+    showSuggestions();
+
+  } catch(err) {
+    setLoading(false);
+    console.error('Parse error:', err);
+    // Fall back to simple suggestions
+    pendingSuggestions = [];
+    if (hours > 0) pendingSuggestions.push({
+      type:'hours', confidence:'high',
+      label:`Add ${hours}h${overtime?' (OT)':''} for ${employee} on ${date}`,
+      data:{ job_id:currentJobId, employee_name:employee, work_date:date, hours, overtime, work_performed:work }
+    });
+    mUsed.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({
+      type:'material_used', confidence:0, parsedName:line.trim(), qty:1, unit:'EA',
+      label:line.trim(), matchedItem:null, estCost:null,
+      data:{ job_id:currentJobId, name:line.trim(), status:'Received', sort_order:999 }
+    }));
+    mNeeded.split('\n').filter(l=>l.trim()).forEach(line=>pendingSuggestions.push({
+      type:'material_needed', confidence:0, parsedName:line.trim(), qty:1, unit:'EA',
+      label:line.trim(), matchedItem:null, estCost:null,
+      data:{ job_id:currentJobId, name:line.trim(), status:'Needed', sort_order:999 }
+    }));
+    showSuggestions();
+  }
 }
 
 function showSuggestions() {
