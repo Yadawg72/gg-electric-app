@@ -1864,9 +1864,8 @@ function clearReportPhoto() {
 
 async function readReportPhoto() {
   if (!reportPhotoBase64) return;
-  document.getElementById('dr-photo-preview').style.display = 'none';
-  document.getElementById('dr-reading-status').style.display = 'block';
-  document.getElementById('dr-read-btn').disabled = true;
+  showToast('Photo scanning requires API access — please fill in manually', true);
+  return;
 
   try {
     const prompt = `You are reading a handwritten electrical field report. Extract ALL information you can see and return ONLY a JSON object with these fields:
