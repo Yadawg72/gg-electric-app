@@ -1689,7 +1689,48 @@ Respond ONLY with a JSON array, no other text. Example:
     showSuggestions();
   }
 }
+  
+function showSuggestions() {
+  const list = document.getElementById('suggestions-list');
+  list.innerHTML = pendingSuggestions.map((s, i) => {
+    const isHours  = s.type === 'hours';
+    const conf     = s.confidence || 0;
+    const highConf = conf >= 0.8;
+    const medConf  = conf >= 0.4 && conf < 0.8;
+    const dotColor = isHours ? '#2980b9' : highConf ? '#3a9e6f' : medConf ? '#c07a1a' : '#c0392b';
+    const bgColor  = isHours ? 'var(--info-bg)' : highConf ? 'var(--success-bg)' : medConf ? 'var(--warning-bg)' : 'var(--danger-bg)';
+    const typeLabel= isHours ? '⏱ Hours' : s.type==='material_used' ? '✅ Used' : '🔧 Needed';
+    const confPct  = isHours ? '' : `<span style="font-size:10px;color:var(--muted);margin-left:6px;">${Math.round(conf*100)}% match</span>`;
+    const costLine = s.estCost ? `<span style="font-size:11px;color:var(--success);font-weight:600;">Est. $${s.estCost}</span>` : '';
 
+    const dropdown = !isHours ? `
+      <div style="margin-top:6px;">
+        <select id="sug-match-${i}" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--charcoal);">
+          <option value="">${highConf ? 'Matched: '+(s.matchedItem?.item_name||'') : 'Select price list item...'}</option>
+          ${priceList.map(p=>`<option value="${p.id}" data-price="${p.unit_price||0}" data-unit="${p.unit}" data-name="${p.item_name}" ${s.matchedItem?.id===p.id?'selected':''}>${p.category} — ${p.item_name} ($${p.unit_price||'?'}/${p.unit})</option>`).join('')}
+        </select>
+      </div>` : '';
+
+    return `
+      <div style="background:${bgColor};border-radius:var(--radius);padding:10px 12px;border-left:3px solid ${dotColor};margin-bottom:4px;">
+        <label style="display:flex;align-items:start;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="sug-${i}" ${highConf||isHours?'checked':''} style="margin-top:3px;cursor:pointer;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:700;color:${dotColor};">${typeLabel}</span>
+              <span style="font-size:13px;font-weight:500;color:var(--charcoal);">${s.label}</span>
+              ${confPct}
+              ${costLine}
+            </div>
+            ${s.matchedItem && highConf ? `<div style="font-size:11px;color:var(--mid);margin-top:3px;">→ Matched to: <strong>${s.matchedItem.item_name}</strong> @ $${s.matchedItem.unit_price||'?'}/${s.matchedItem.unit}</div>` : ''}
+            ${dropdown}
+          </div>
+        </label>
+      </div>`;
+  }).join('');
+  document.getElementById('modal-suggestions').classList.add('open');
+}
+  
 function fuzzyMatchPriceList(name) {
   if (!priceList.length) return null;
   const normalize = s => s.toUpperCase()
