@@ -1459,7 +1459,7 @@ async function openJob(id) {
     loadDailyReports();
   }
   setLoading(true,'Loading job...');
-  await Promise.all([loadTasks(),loadMaterials(),loadInspections(),loadHours(),loadContacts(),loadNotes(),loadPhotos(),loadDocs()]);
+  await Promise.all([loadTasks(),loadMaterials(),loadInspections(),loadHours(),loadContacts(),loadNotes(),loadDocs()]);
   setLoading(false);
 }
 
