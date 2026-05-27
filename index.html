@@ -1101,6 +1101,7 @@ function bootApp() {
   document.getElementById('u-email').textContent  = email;
   loadJobs();
   loadPriceList();
+  loadMaterialMappings();
   setupRealtime();
 }
 
@@ -2245,20 +2246,50 @@ function parseMatLine(line) {
   
 function fuzzyMatchPriceList(name) {
   if (!priceList.length) return null;
+
   const normalize = s => s.toUpperCase()
     .replace(/[^A-Z0-9\s\/\-\.\"#]/g,'')
-    .replace(/\s+/g,' ').trim();
+    .replace(/\s+/g,' ').trim()
+    .replace(/\bRECEPT\b/g,'RECEPTACLE')
+    .replace(/\bRECEPTS\b/g,'RECEPTACLE')
+    .replace(/\bRECEP\b/g,'RECEPTACLE')
+    .replace(/\bRECEPTACLES\b/g,'RECEPTACLE')
+    .replace(/\bSW\b/g,'SWITCH')
+    .replace(/\bSWITCHES\b/g,'SWITCH')
+    .replace(/\bDBL\b/g,'DOUBLE')
+    .replace(/\bSGL\b/g,'SINGLE')
+    .replace(/\bBOXES\b/g,'BOX')
+    .replace(/\bCONN\b/g,'CONNECTOR')
+    .replace(/\bCONNECTORS\b/g,'CONNECTOR')
+    .replace(/\bBREAKERS\b/g,'BREAKER')
+    .replace(/\bAMPS\b/g,'AMP')
+    .replace(/\bPLATES\b/g,'PLATE')
+    .replace(/\bCOVERS\b/g,'COVER')
+    .replace(/\bSTRAPS\b/g,'STRAP')
+    .replace(/R\/S/g,'RS')
+    .replace(/R-S/g,'RS')
+    .replace(/\bS\.S\.\b/g,'SS')
+    .replace(/\bP&S\b/g,'PS');
+
   const target = normalize(name);
 
-  let best = null, bestScore = 0;
+  // Check learned mappings first — instant 100% match
+  if (materialMappings.length) {
+    const learned = materialMappings.find(m => normalize(m.entered_text) === target);
+    if (learned && learned.price_list) {
+      return { item: learned.price_list, confidence: 1.0, learned: true };
+    }
+  }
 
+  // Fall back to fuzzy matching
+  let best = null, bestScore = 0;
   for (const item of priceList) {
     const candidate = normalize(item.item_name);
     const score = similarityScore(target, candidate);
     if (score > bestScore) { bestScore = score; best = item; }
   }
 
-  return bestScore > 0.3 ? { item: best, confidence: bestScore } : null;
+  return bestScore > 0.3 ? { item: best, confidence: bestScore, learned: false } : null;
 }
 
 function similarityScore(a, b) {
