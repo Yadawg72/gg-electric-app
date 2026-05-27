@@ -2202,20 +2202,33 @@ async function saveReviewPrice(idx, name) {
   }
 }
 
-  function parseMatLine(line) {
+function parseMatLine(line) {
   const patterns = [
-    /^(\d+\.?\d*)\s*ft[\s\-]+(.+)$/i,
-    /^(\d+\.?\d*)\s*lf[\s\-]+(.+)$/i,
-    /^(\d+\.?\d*)ft(.+)$/i,
-    /^(\d+\.?\d*)\s*[\-–]\s*(.+)$/,
-    /^(\d+\.?\d*)\s+(.+)$/,
+    // 500ft #12 THHN or 500 ft #12 THHN
+    [/^(\d+\.?\d*)\s*ft[\s\-]+(.+)$/i, 'LF'],
+    [/^(\d+\.?\d*)\s*lf[\s\-]+(.+)$/i, 'LF'],
+    [/^(\d+\.?\d*)ft(.+)$/i,            'LF'],
+    // 500 - material or 500 – material (dash separator)
+    // Only match if what follows the dash does NOT start with a digit
+    // This prevents "2 - 4 square boxes" from capturing "4 square boxes" incorrectly
+    [/^(\d+\.?\d*)\s*[\-–]\s*([^\d].+)$/, 'EA'],
+    // qty followed by space then non-digit name e.g. "6 duplex recepts"
+    [/^(\d+\.?\d*)\s+([^\d].+)$/, 'EA'],
+    // qty followed by space then digit-starting name e.g. "2 4-square boxes"
+    // treat entire thing after first number as name
+    [/^(\d+\.?\d*)\s+(.+)$/, 'EA'],
   ];
-  for (const pattern of patterns) {
+
+  for (const [pattern, defaultUnit] of patterns) {
     const m = line.match(pattern);
     if (m) {
       const qty  = parseFloat(m[1]) || 1;
       const rest = m[2].trim();
-      const unit = /ft|lf/i.test(line.substring(0, line.toLowerCase().indexOf(rest.toLowerCase()))) ? 'LF' : 'EA';
+      // Double check we didn't just capture a size number as the whole name
+      // If rest is just digits, skip this pattern
+      if (/^\d+$/.test(rest)) continue;
+      const isLF = /ft|lf/i.test(line.substring(0, Math.max(0, line.toLowerCase().indexOf(rest.toLowerCase()))));
+      const unit = isLF ? 'LF' : defaultUnit;
       return { qty, unit, name: rest.toUpperCase() };
     }
   }
