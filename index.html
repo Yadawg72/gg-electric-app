@@ -2323,26 +2323,56 @@ function similarityScore(a, b) {
 async function applySuggestions() {
   setLoading(true,'Applying updates...');
   let applied=0, errors=[];
+
   for (let i=0;i<pendingSuggestions.length;i++) {
     const cb=document.getElementById(`sug-${i}`);
     if (!cb?.checked) continue;
     const s=pendingSuggestions[i];
     const matchSel=document.getElementById(`sug-match-${i}`);
+
     if (matchSel && matchSel.value) {
       const opt=matchSel.options[matchSel.selectedIndex];
       s.data.name     = opt.dataset.name;
       s.data.est_cost = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
+
+      // Save learned mapping if user picked a different item than auto-match
+      // or if there was no auto-match (confidence < 0.8)
+      const userPickedManually = !s.matchedItem || s.matchedItem.item_name !== opt.dataset.name;
+      if (userPickedManually && s.parsedName && opt.dataset.name) {
+        const enteredText = s.parsedName.toUpperCase().trim();
+        // Upsert — update if exists, insert if not
+        await sb.from('material_mappings').upsert({
+          entered_text:  enteredText,
+          price_list_id: matchSel.value,
+          item_name:     opt.dataset.name,
+          updated_at:    new Date().toISOString()
+        }, { onConflict: 'entered_text' });
+
+        // Update local cache so it works immediately
+        const existing = materialMappings.findIndex(m => m.entered_text === enteredText);
+        const newMapping = {
+          entered_text:  enteredText,
+          price_list_id: matchSel.value,
+          item_name:     opt.dataset.name,
+          price_list:    priceList.find(p => p.id === matchSel.value)
+        };
+        if (existing >= 0) materialMappings[existing] = newMapping;
+        else materialMappings.push(newMapping);
+      }
     }
+
     const table=s.type==='hours'?'hours_logged':'materials';
     const { error }=await sb.from(table).insert(s.data);
     if (error) errors.push(error.message); else applied++;
   }
+
   setLoading(false);
   closeModal('modal-suggestions');
   if (errors.length) showToast(`Applied ${applied}, ${errors.length} failed`,true);
   else showToast(`Applied ${applied} update(s)!`);
   await loadMaterials();
   await loadHours();
+  loadTally();
 }
 
 async function loadDailyReports() {
