@@ -164,6 +164,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .panel.collapsed .panel-body{display:none;}
 .panel-actions{margin-left:auto;display:flex;gap:8px;align-items:center;}
 
+ .photo-grid{
+  padding:16px 20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+  clear:both;
+  width:100%;
+}
+
 /* INFO GRID */
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-light);}
 .info-grid-3{grid-template-columns:1fr 1fr 1fr;}
@@ -225,7 +234,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .photo-meta label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;display:block;}
 .photo-meta select,.photo-meta input{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:white;outline:none;transition:border-color .15s;}
 .photo-meta select:focus,.photo-meta input:focus{border-color:var(--teal);}
-.photo-grid{padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
 .photo-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white;box-shadow:var(--shadow-sm);transition:box-shadow .15s;}
 .photo-card:hover{box-shadow:var(--shadow-md);}
 .photo-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;cursor:pointer;}
@@ -688,7 +696,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
             <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📄</span><h2>Documents &amp; Plans</h2><span class="panel-chevron">▾</span></div>
             <div class="panel-body">
               <div class="photo-upload-area">
-                <label class="photo-drop">
+                <label classS="photo-drop">
                   <span class="photo-drop-icon">📎</span><p>Upload Document</p><span>PDF, DWG, any file</span>
                   <input type="file" accept=".pdf,.dwg,.doc,.docx,.xlsx,.png,.jpg" multiple onchange="handleDocUpload(event)">
                 </label>
