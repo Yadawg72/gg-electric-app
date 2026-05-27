@@ -1779,79 +1779,66 @@ async function submitDailyReport() {
   loadDailyReports();
   loadHours();
 
-  // Parse materials if any
+ // Parse materials locally
   if (!mUsed && !mNeeded) return;
 
-  setLoading(true, 'Analyzing materials...');
-  try {
-    const parsePrompt = `You are parsing a field electrician's handwritten daily report into structured data.
+  pendingSuggestions = [];
 
-Parse EACH line from the materials lists below into JSON. For each item extract:
-- "name": clean material name (uppercase, no quantity/unit)
-- "qty": numeric quantity (default 1 if not specified)
-- "unit": "LF" for linear feet/ft, "EA" for each/count/pieces, default "EA"
-- "action": "used" or "needed"
-
-Common abbreviations: ft=LF, #=number/gauge, recept=receptacle, conn=connector, dup=duplex
-
-Materials Used:
-${mUsed || '(none)'}
-
-Materials Needed:
-${mNeeded || '(none)'}
-
-Respond ONLY with a JSON array, no other text.`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role:'user', content:parsePrompt }]
-      })
-    });
-
-    const apiData = await response.json();
-    const rawText = apiData.content?.[0]?.text || '[]';
-    const clean   = rawText.replace(/```json|```/g,'').trim();
-    const parsed  = JSON.parse(clean);
-
-    pendingSuggestions = [];
-    for (const item of parsed) {
-      const match   = fuzzyMatchPriceList(item.name);
-      const status  = item.action==='used' ? 'Used' : 'Needed';
+  if (mUsed) {
+    mUsed.split('\n').filter(l=>l.trim()).forEach(line => {
+      const parsed  = parseMatLine(line.trim());
+      const match   = fuzzyMatchPriceList(parsed.name);
       const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
-        ? (item.qty * match.item.unit_price).toFixed(2) : null;
-
+        ? (parsed.qty * match.item.unit_price).toFixed(2) : null;
       pendingSuggestions.push({
-        type:        item.action==='used' ? 'material_used' : 'material_needed',
-        confidence:  match ? match.confidence : 0,
-        parsedName:  item.name,
-        qty:         item.qty,
-        unit:        item.unit,
-        label:       `${item.qty} ${item.unit} — ${item.name}`,
+        type:'material_used',
+        confidence: match ? match.confidence : 0,
+        parsedName: parsed.name,
+        qty: parsed.qty,
+        unit: parsed.unit,
+        label: `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
         matchedItem: match ? match.item : null,
         estCost,
-        data: {
-          job_id:    currentJobId,
-          name:      match && match.confidence>=0.8 ? match.item.item_name : item.name,
-          qty_needed:item.qty,
-          status,
-          est_cost:  estCost,
-          sort_order:999
+        data:{
+          job_id: currentJobId,
+          name: match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
+          qty_needed: parsed.qty,
+          status: 'Used',
+          est_cost: estCost,
+          sort_order: 999
         }
       });
-    }
-
-    setLoading(false);
-    if (pendingSuggestions.length > 0) showSuggestions();
-
-  } catch(err) {
-    setLoading(false);
-    console.error('Parse error:', err);
-    showToast('Materials saved but could not auto-parse — add manually', true);
+    });
   }
+
+  if (mNeeded) {
+    mNeeded.split('\n').filter(l=>l.trim()).forEach(line => {
+      const parsed  = parseMatLine(line.trim());
+      const match   = fuzzyMatchPriceList(parsed.name);
+      const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
+        ? (parsed.qty * match.item.unit_price).toFixed(2) : null;
+      pendingSuggestions.push({
+        type:'material_needed',
+        confidence: match ? match.confidence : 0,
+        parsedName: parsed.name,
+        qty: parsed.qty,
+        unit: parsed.unit,
+        label: `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
+        matchedItem: match ? match.item : null,
+        estCost,
+        data:{
+          job_id: currentJobId,
+          name: match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
+          qty_needed: parsed.qty,
+          status: 'Needed',
+          est_cost: estCost,
+          sort_order: 999
+        }
+      });
+    });
+  }
+
+  if (pendingSuggestions.length > 0) showSuggestions();
 }
   
 function showSuggestions() {
