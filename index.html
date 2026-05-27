@@ -2479,7 +2479,7 @@ async function loadPhotos() {
   const { data }=await sb.from('job_files').select('*').eq('job_id',currentJobId).eq('file_category','photo').order('created_at');
   const photos=data||[], grid=document.getElementById('photo-grid');
   if (!photos.length) { grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>'; return; }
-  grid.innerHTML=photos.map(p=>`<div class="photo-card"><img class="photo-thumb" src="${p.file_url}" onclick="window.open('${p.file_url}','_blank')"><div class="photo-info"><div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''} ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}</div></div>`).join('');
+  grid.innerHTML=photos.map(p=>`<div class="photo-card"><img class="photo-thumb" src="${p.file_url}" onclick="window.open('${p.file_url}','_blank')" loading="lazy"><div class="photo-info"><div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''} ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}</div></div>`).join('');
 }
 
 // ── DOCUMENTS ─────────────────────────────────────────────────────────────
