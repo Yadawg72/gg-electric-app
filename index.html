@@ -2267,13 +2267,19 @@ function similarityScore(a, b) {
 
   const wordScore = (2 * matches) / (aWords.length + bWords.length);
 
-  // Bonus for matching numbers/sizes exactly
+ // Bonus for matching numbers/sizes exactly
   const aNums = a.match(/[\d\/\-\.\"#]+/g) || [];
   const bNums = b.match(/[\d\/\-\.\"#]+/g) || [];
   const numMatches = aNums.filter(n => bNums.includes(n)).length;
   const numBonus = aNums.length > 0 ? (numMatches / aNums.length) * 0.3 : 0;
 
-  return Math.min(1.0, wordScore + numBonus);
+  // Penalty if key electrical words are present in one but not the other
+  const electricalWords = ['THHN','ROMEX','EMT','PVC','MC','CARFLEX','RIGID','UF','RECEPTACLE','SWITCH','BREAKER','PANEL','CONDUIT','WIRE','CABLE'];
+  const aElec = electricalWords.filter(w => a.includes(w));
+  const bElec = electricalWords.filter(w => b.includes(w));
+  const elecPenalty = aElec.some(w => !bElec.includes(w)) || bElec.some(w => !aElec.includes(w)) ? 0.25 : 0;
+
+  return Math.min(1.0, Math.max(0, wordScore + numBonus - elecPenalty));
 }
 
 async function applySuggestions() {
