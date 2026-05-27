@@ -2546,8 +2546,42 @@ async function handlePhotoUpload(e) {
 async function loadPhotos() {
   const { data }=await sb.from('job_files').select('*').eq('job_id',currentJobId).eq('file_category','photo').order('created_at');
   const photos=data||[], grid=document.getElementById('photo-grid');
-  if (!photos.length) { grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>'; return; }
-  grid.innerHTML=photos.map(p=>`<div class="photo-card"><img class="photo-thumb" src="${p.file_url}" onclick="window.open('${p.file_url}','_blank')"><div class="photo-info"><div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''} ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}</div></div>`).join('');
+  if (!photos.length) {
+    grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>';
+    return;
+  }
+  grid.innerHTML=photos.map(p=>`
+    <div class="photo-card">
+      <div style="position:relative;width:100%;padding-top:75%;background:#f0f0f0;overflow:hidden;border-radius:var(--radius) var(--radius) 0 0;">
+        <img
+          loading="lazy"
+          data-src="${p.file_url}"
+          src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+          onclick="window.open('${p.file_url}','_blank')"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;cursor:pointer;transition:opacity .3s;"
+          onload="this.style.opacity=1"
+          onerror="this.style.opacity=0.3">
+      </div>
+      <div class="photo-info">
+        <div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>
+        ${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''}
+        ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}
+      </div>
+    </div>`).join('');
+
+  // Intersection Observer — only loads image when scrolled into view
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+        obs.unobserve(img);
+      }
+    });
+  }, { rootMargin:'200px' });
+
+  grid.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
 }
 
 // ── DOCUMENTS ─────────────────────────────────────────────────────────────
