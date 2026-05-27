@@ -2491,18 +2491,49 @@ async function deleteReport(id) {
 }
 
 // ── PHOTOS ────────────────────────────────────────────────────────────────
+async function compressImage(file, maxWidth=800, quality=0.70) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function handlePhotoUpload(e) {
-  const files=Array.from(e.target.files), stage=document.getElementById('photo-stage').value, note=document.getElementById('photo-note').value;
+  const files=Array.from(e.target.files);
+  const stage=document.getElementById('photo-stage').value;
+  const note=document.getElementById('photo-note').value;
   setLoading(true,`Uploading ${files.length} photo(s)...`);
   for(const file of files){
-    const path=`${currentJobId}/photos/${Date.now()}_${file.name}`;
-    const { error:upErr }=await sb.storage.from('job-files').upload(path,file);
+    // Compress before upload
+    const compressed = await compressImage(file);
+    const fileName   = file.name.replace(/\.[^/.]+$/, '') + '_compressed.jpg';
+    const path       = `${currentJobId}/photos/${Date.now()}_${fileName}`;
+    const { error:upErr }=await sb.storage.from('job-files').upload(path, compressed, { contentType:'image/jpeg' });
     if(upErr){showToast('Upload error: '+upErr.message,true);continue;}
     const { data:ud }=await sb.storage.from('job-files').getPublicUrl(path);
-    await sb.from('job_files').insert({job_id:currentJobId,file_name:file.name,file_url:ud.publicUrl,file_category:'photo',file_type:file.type,stage_tag:stage,notes:note,uploaded_by:currentUser.id});
+    await sb.from('job_files').insert({
+      job_id:currentJobId, file_name:file.name, file_url:ud.publicUrl,
+      file_category:'photo', file_type:'image/jpeg',
+      stage_tag:stage, notes:note, uploaded_by:currentUser.id
+    });
   }
-  setLoading(false); document.getElementById('photo-note').value=''; e.target.value='';
-  await loadPhotos(); showToast(`✓ ${files.length} photo(s) uploaded`);
+  setLoading(false);
+  document.getElementById('photo-note').value='';
+  e.target.value='';
+  await loadPhotos();
+  showToast(`✓ ${files.length} photo(s) uploaded`);
 }
 
 async function loadPhotos() {
