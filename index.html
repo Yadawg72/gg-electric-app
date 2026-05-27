@@ -164,15 +164,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .panel.collapsed .panel-body{display:none;}
 .panel-actions{margin-left:auto;display:flex;gap:8px;align-items:center;}
 
- .photo-grid{
-  padding:16px 20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:14px;
-  clear:both;
-  width:100%;
-}
-
 /* INFO GRID */
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-light);}
 .info-grid-3{grid-template-columns:1fr 1fr 1fr;}
@@ -234,6 +225,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .photo-meta label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;display:block;}
 .photo-meta select,.photo-meta input{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--charcoal);background:white;outline:none;transition:border-color .15s;}
 .photo-meta select:focus,.photo-meta input:focus{border-color:var(--teal);}
+.photo-grid{padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
 .photo-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white;box-shadow:var(--shadow-sm);transition:box-shadow .15s;}
 .photo-card:hover{box-shadow:var(--shadow-md);}
 .photo-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;cursor:pointer;}
@@ -437,7 +429,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
           <!-- CALENDAR -->
           <div class="panel" id="cal-panel">
-           <div class="panel-head" onclick="togglePanel(this.parentElement)">
+            <div class="panel-head" onclick="togglePanel(this.parentElement)">
               <span class="panel-icon">📅</span>
               <h2>Job Calendar</h2>
               <div style="margin-left:auto;margin-right:8px;" onclick="event.stopPropagation()">
@@ -672,8 +664,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           </div>
 
           <div class="panel">
-            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📷</span><h2>Job Photos</h2><span class="panel-chevron">▾</span>
-             <div class="panel-body">
+            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📷</span><h2>Job Photos</h2><span class="panel-chevron">▾</span></div>
+            <div class="panel-body">
               <div class="photo-upload-area">
                 <label class="photo-drop">
                   <span class="photo-drop-icon">📁</span><p>Upload Photos</p><span>Click to browse</span>
@@ -691,12 +683,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
               </div>
               <div class="photo-grid" id="photo-grid"></div>
             </div>
+          </div>
 
           <div class="panel">
             <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📄</span><h2>Documents &amp; Plans</h2><span class="panel-chevron">▾</span></div>
             <div class="panel-body">
               <div class="photo-upload-area">
-                <label classS="photo-drop">
+                <label class="photo-drop">
                   <span class="photo-drop-icon">📎</span><p>Upload Document</p><span>PDF, DWG, any file</span>
                   <input type="file" accept=".pdf,.dwg,.doc,.docx,.xlsx,.png,.jpg" multiple onchange="handleDocUpload(event)">
                 </label>
@@ -2330,56 +2323,26 @@ function similarityScore(a, b) {
 async function applySuggestions() {
   setLoading(true,'Applying updates...');
   let applied=0, errors=[];
-
   for (let i=0;i<pendingSuggestions.length;i++) {
     const cb=document.getElementById(`sug-${i}`);
     if (!cb?.checked) continue;
     const s=pendingSuggestions[i];
     const matchSel=document.getElementById(`sug-match-${i}`);
-
     if (matchSel && matchSel.value) {
       const opt=matchSel.options[matchSel.selectedIndex];
       s.data.name     = opt.dataset.name;
       s.data.est_cost = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
-
-      // Save learned mapping if user picked a different item than auto-match
-      // or if there was no auto-match (confidence < 0.8)
-      const userPickedManually = !s.matchedItem || s.matchedItem.item_name !== opt.dataset.name;
-      if (userPickedManually && s.parsedName && opt.dataset.name) {
-        const enteredText = s.parsedName.toUpperCase().trim();
-        // Upsert — update if exists, insert if not
-        await sb.from('material_mappings').upsert({
-          entered_text:  enteredText,
-          price_list_id: matchSel.value,
-          item_name:     opt.dataset.name,
-          updated_at:    new Date().toISOString()
-        }, { onConflict: 'entered_text' });
-
-        // Update local cache so it works immediately
-        const existing = materialMappings.findIndex(m => m.entered_text === enteredText);
-        const newMapping = {
-          entered_text:  enteredText,
-          price_list_id: matchSel.value,
-          item_name:     opt.dataset.name,
-          price_list:    priceList.find(p => p.id === matchSel.value)
-        };
-        if (existing >= 0) materialMappings[existing] = newMapping;
-        else materialMappings.push(newMapping);
-      }
     }
-
     const table=s.type==='hours'?'hours_logged':'materials';
     const { error }=await sb.from(table).insert(s.data);
     if (error) errors.push(error.message); else applied++;
   }
-
   setLoading(false);
   closeModal('modal-suggestions');
   if (errors.length) showToast(`Applied ${applied}, ${errors.length} failed`,true);
   else showToast(`Applied ${applied} update(s)!`);
   await loadMaterials();
   await loadHours();
-  loadTally();
 }
 
 async function loadDailyReports() {
@@ -2498,107 +2461,25 @@ async function deleteReport(id) {
 }
 
 // ── PHOTOS ────────────────────────────────────────────────────────────────
-async function compressImage(file, maxWidth=800, quality=0.40) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let w = img.width, h = img.height;
-        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function loadPhotos() {
-  const { data }=await sb.from('job_files').select('*').eq('job_id',currentJobId).eq('file_category','photo').order('created_at');
-  const photos=data||[], grid=document.getElementById('photo-grid');
-  if(!photos.length){
-    grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>';
-    return;
-  }
-  grid.innerHTML=photos.map(p=>`
-    <div class="photo-card">
-      <img class="photo-thumb" src="${p.file_url}" loading="lazy" onclick="window.open('${p.file_url}','_blank')">
-      <div class="photo-info">
-        <div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>
-        ${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''}
-        ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}
-      </div>
-    </div>`).join('');
-}
 async function handlePhotoUpload(e) {
-  const files=Array.from(e.target.files);
-  const stage=document.getElementById('photo-stage').value;
-  const note=document.getElementById('photo-note').value;
+  const files=Array.from(e.target.files), stage=document.getElementById('photo-stage').value, note=document.getElementById('photo-note').value;
   setLoading(true,`Uploading ${files.length} photo(s)...`);
   for(const file of files){
-    // Compress before upload
-    const compressed = await compressImage(file);
-    const fileName   = file.name.replace(/\.[^/.]+$/, '') + '_compressed.jpg';
-    const path       = `${currentJobId}/photos/${Date.now()}_${fileName}`;
-    const { error:upErr }=await sb.storage.from('job-files').upload(path, compressed, { contentType:'image/jpeg' });
+    const path=`${currentJobId}/photos/${Date.now()}_${file.name}`;
+    const { error:upErr }=await sb.storage.from('job-files').upload(path,file);
     if(upErr){showToast('Upload error: '+upErr.message,true);continue;}
     const { data:ud }=await sb.storage.from('job-files').getPublicUrl(path);
-    await sb.from('job_files').insert({
-      job_id:currentJobId, file_name:file.name, file_url:ud.publicUrl,
-      file_category:'photo', file_type:'image/jpeg',
-      stage_tag:stage, notes:note, uploaded_by:currentUser.id
-    });
+    await sb.from('job_files').insert({job_id:currentJobId,file_name:file.name,file_url:ud.publicUrl,file_category:'photo',file_type:file.type,stage_tag:stage,notes:note,uploaded_by:currentUser.id});
   }
-  setLoading(false);
-  document.getElementById('photo-note').value='';
-  e.target.value='';
-  await loadPhotos();
-  showToast(`✓ ${files.length} photo(s) uploaded`);
+  setLoading(false); document.getElementById('photo-note').value=''; e.target.value='';
+  await loadPhotos(); showToast(`✓ ${files.length} photo(s) uploaded`);
 }
 
 async function loadPhotos() {
   const { data }=await sb.from('job_files').select('*').eq('job_id',currentJobId).eq('file_category','photo').order('created_at');
   const photos=data||[], grid=document.getElementById('photo-grid');
-  if (!photos.length) {
-    grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>';
-    return;
-  }
-  grid.innerHTML=photos.map(p=>`
-    <div class="photo-card">
-      <div style="position:relative;width:100%;padding-top:75%;background:#f0f0f0;overflow:hidden;border-radius:var(--radius) var(--radius) 0 0;">
-        <img
-          loading="lazy"
-          data-src="${p.file_url}"
-          src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-          onclick="window.open('${p.file_url}','_blank')"
-          style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;cursor:pointer;transition:opacity .3s;"
-          onload="this.style.opacity=1"
-          onerror="this.style.opacity=0.3">
-      </div>
-      <div class="photo-info">
-        <div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>
-        ${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''}
-        ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}
-      </div>
-    </div>`).join('');
-
-  // Intersection Observer — only loads image when scrolled into view
-  const observer = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        img.src = img.dataset.src;
-        img.removeAttribute('data-src');
-        obs.unobserve(img);
-      }
-    });
-  }, { rootMargin:'200px' });
-
-  grid.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
+  if (!photos.length) { grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>'; return; }
+  grid.innerHTML=photos.map(p=>`<div class="photo-card"><img class="photo-thumb" src="${p.file_url}" onclick="window.open('${p.file_url}','_blank')"><div class="photo-info"><div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''} ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}</div></div>`).join('');
 }
 
 // ── DOCUMENTS ─────────────────────────────────────────────────────────────
