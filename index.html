@@ -429,7 +429,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
           <!-- CALENDAR -->
           <div class="panel" id="cal-panel">
-            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📷</span><h2>Job Photos</h2>
+           <div class="panel-head" onclick="togglePanel(this.parentElement)">
               <span class="panel-icon">📅</span>
               <h2>Job Calendar</h2>
               <div style="margin-left:auto;margin-right:8px;" onclick="event.stopPropagation()">
@@ -664,7 +664,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           </div>
 
           <div class="panel">
-            <div class="panel-head" onclick="togglePanel(this.parentElement);loadPhotosOnce()"><span class="panel-icon">📷</span><h2>Job Photos</h2>
+            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📷</span><h2>Job Photos</h2>
             <div class="panel-body">
               <div class="photo-upload-area">
                 <label class="photo-drop">
@@ -1443,7 +1443,6 @@ function copyCredentials() {
 // ── OPEN JOB ──────────────────────────────────────────────────────────────
 async function openJob(id) {
   currentJobId = id;
-  photosLoaded = false;
   document.getElementById('nav-job').style.display = 'block';
   showView('job');
   renderSidebar(document.getElementById('job-search').value);
