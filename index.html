@@ -1902,6 +1902,7 @@ function clearReportPhoto() {
 }
 
 async function readReportPhoto() {
+  console.log('readReportPhoto called, base64 length:', reportPhotoBase64 ? reportPhotoBase64.length : 'NULL');
   if (!reportPhotoBase64) return;
 
   document.getElementById('dr-photo-preview').style.display = 'none';
