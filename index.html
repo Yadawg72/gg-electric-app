@@ -1104,9 +1104,16 @@ function bootApp() {
   setupRealtime();
 }
 
+let materialMappings = [];
+
 async function loadPriceList() {
   const { data } = await sb.from('price_list').select('*').order('category').order('item_name');
   priceList = data || [];
+}
+
+async function loadMaterialMappings() {
+  const { data } = await sb.from('material_mappings').select('*, price_list(*)');
+  materialMappings = data || [];
 }
 
 // ── REALTIME ──────────────────────────────────────────────────────────────
