@@ -1991,6 +1991,7 @@ async function loadTally() {
     document.getElementById('tally-review-badge').style.display = 'none';
     document.getElementById('tally-review-section').style.display = 'none';
     return;
+  
   }
 
   // Group by fuzzy-matched name
@@ -2063,7 +2064,7 @@ async function loadTally() {
       : `<span class="tally-match-low">⚠️ ${Math.round(g.confidence*100)}%</span>`;
 
     return `<tr>
-      <td style="font-weight:500;">${g.name}</td>
+      <td style="font-weight:500;">${g.priceItem ? g.priceItem.item_name : g.name}</td>
       <td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">${g.qty % 1 === 0 ? g.qty : g.qty.toFixed(1)}</td>
       <td style="text-align:center;"><span style="background:var(--teal-pale);color:var(--teal-dark);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;">${g.unit}</span></td>
       <td style="text-align:right;">
