@@ -1858,7 +1858,7 @@ function showSuggestions() {
       <div style="margin-top:6px;">
         <select id="sug-match-${i}" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--charcoal);">
           <option value="">${highConf ? 'Matched: '+(s.matchedItem?.item_name||'') : 'Select price list item...'}</option>
-          ${priceList.map(p=>`<option value="${p.id}" data-price="${p.unit_price||0}" data-unit="${p.unit}" data-name="${p.item_name}" ${s.matchedItem?.id===p.id?'selected':''}>${p.category} — ${p.item_name} ($${p.unit_price||'?'}/${p.unit})</option>`).join('')}
+          ${[...new Map(priceList.map(p=>[p.item_name,p])).values()].map(p=>`<option value="${p.id}" data-price="${p.unit_price||0}" data-unit="${p.unit}" data-name="${p.item_name}" ${s.matchedItem?.id===p.id?'selected':''}>${p.category} — ${p.item_name} ($${p.unit_price||'?'}/${p.unit})</option>`).join('')}
         </select>
       </div>` : '';
 
