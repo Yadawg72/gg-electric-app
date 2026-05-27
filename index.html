@@ -2214,6 +2214,26 @@ async function saveReviewPrice(idx, name) {
     await loadTally();
   }
 }
+
+  function parseMatLine(line) {
+  const patterns = [
+    /^(\d+\.?\d*)\s*ft[\s\-]+(.+)$/i,
+    /^(\d+\.?\d*)\s*lf[\s\-]+(.+)$/i,
+    /^(\d+\.?\d*)ft(.+)$/i,
+    /^(\d+\.?\d*)\s*[\-–]\s*(.+)$/,
+    /^(\d+\.?\d*)\s+(.+)$/,
+  ];
+  for (const pattern of patterns) {
+    const m = line.match(pattern);
+    if (m) {
+      const qty  = parseFloat(m[1]) || 1;
+      const rest = m[2].trim();
+      const unit = /ft|lf/i.test(line.substring(0, line.toLowerCase().indexOf(rest.toLowerCase()))) ? 'LF' : 'EA';
+      return { qty, unit, name: rest.toUpperCase() };
+    }
+  }
+  return { qty:1, unit:'EA', name: line.toUpperCase() };
+}
   
 function fuzzyMatchPriceList(name) {
   if (!priceList.length) return null;
