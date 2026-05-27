@@ -664,7 +664,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           </div>
 
           <div class="panel">
-            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📷</span><h2>Job Photos</h2><span class="panel-chevron">▾</span></div>
+            <div class="panel-head" onclick="togglePanel(this.parentElement);loadPhotosOnce()"><span class="panel-icon">📷</span><h2>Job Photos</h2>
             <div class="panel-body">
               <div class="photo-upload-area">
                 <label class="photo-drop">
@@ -1443,6 +1443,7 @@ function copyCredentials() {
 // ── OPEN JOB ──────────────────────────────────────────────────────────────
 async function openJob(id) {
   currentJobId = id;
+  photosLoaded = false;
   document.getElementById('nav-job').style.display = 'block';
   showView('job');
   renderSidebar(document.getElementById('job-search').value);
@@ -1458,7 +1459,7 @@ async function openJob(id) {
     loadDailyReports();
   }
   setLoading(true,'Loading job...');
-  await Promise.all([loadTasks(),loadMaterials(),loadInspections(),loadHours(),loadContacts(),loadNotes(),loadPhotos(),loadDocs()]);
+  await Promise.all([loadTasks(),loadMaterials(),loadInspections(),loadHours(),loadContacts(),loadNotes(),loadDocs()]);
   setLoading(false);
 }
 
@@ -2491,7 +2492,7 @@ async function deleteReport(id) {
 }
 
 // ── PHOTOS ────────────────────────────────────────────────────────────────
-async function compressImage(file, maxWidth=800, quality=0.70) {
+async function compressImage(file, maxWidth=800, quality=0.40) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -2510,6 +2511,12 @@ async function compressImage(file, maxWidth=800, quality=0.70) {
   });
 }
 
+  let photosLoaded = false;
+async function loadPhotosOnce() {
+  if (photosLoaded) return;
+  photosLoaded = true;
+  await loadPhotos();
+}
 async function handlePhotoUpload(e) {
   const files=Array.from(e.target.files);
   const stage=document.getElementById('photo-stage').value;
