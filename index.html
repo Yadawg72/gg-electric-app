@@ -1925,9 +1925,12 @@ async function readReportPhoto() {
     );
 
     const data      = await response.json();
+    console.log('Raw response:', data);
     const rawText   = data.result || '{}';
     const clean     = rawText.replace(/```json|```/g, '').trim();
+    console.log('Cleaned text:', clean);
     const extracted = JSON.parse(clean);
+    console.log('Extracted:', extracted);
 
     if (extracted.date)             document.getElementById('dr-date').value              = extracted.date;
     if (extracted.location)         document.getElementById('dr-location').value           = extracted.location;
