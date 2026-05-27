@@ -1443,6 +1443,7 @@ function copyCredentials() {
 // ── OPEN JOB ──────────────────────────────────────────────────────────────
 async function openJob(id) {
   currentJobId = id;
+  photosLoaded = false;
   document.getElementById('nav-job').style.display = 'block';
   showView('job');
   renderSidebar(document.getElementById('job-search').value);
