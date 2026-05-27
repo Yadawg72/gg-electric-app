@@ -2462,12 +2462,16 @@ async function deleteReport(id) {
 }
 
 // ── PHOTOS ────────────────────────────────────────────────────────────────
-  let photosLoaded = false;
-function loadPhotosOnDemand() {
+let photosLoaded = false;
+function loadPhotosOnDemand(el) {
+  // Panel is currently collapsed, meaning we're about to open it
+  const isOpening = el.closest('.panel').classList.contains('collapsed');
+  if (!isOpening) return;
   if (photosLoaded) return;
   photosLoaded = true;
   loadPhotos();
 }
+  
 async function handlePhotoUpload(e) {
   const files=Array.from(e.target.files), stage=document.getElementById('photo-stage').value, note=document.getElementById('photo-note').value;
   setLoading(true,`Uploading ${files.length} photo(s)...`);
