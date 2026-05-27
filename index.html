@@ -429,7 +429,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 
           <!-- CALENDAR -->
           <div class="panel" id="cal-panel">
-            <div class="panel-head" onclick="togglePanel(this.parentElement)">
+            <div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📷</span><h2>Job Photos</h2>
               <span class="panel-icon">📅</span>
               <h2>Job Calendar</h2>
               <div style="margin-left:auto;margin-right:8px;" onclick="event.stopPropagation()">
@@ -2511,11 +2511,11 @@ async function compressImage(file, maxWidth=800, quality=0.40) {
   });
 }
 
-  let photosLoaded = false;
-async function loadPhotosOnce() {
-  if (photosLoaded) return;
-  photosLoaded = true;
-  await loadPhotos();
+async function loadPhotos() {
+  const { data }=await sb.from('job_files').select('*').eq('job_id',currentJobId).eq('file_category','photo').order('created_at');
+  const photos=data||[], grid=document.getElementById('photo-grid');
+  if(!photos.length){grid.innerHTML='<div class="photo-empty" style="grid-column:1/-1"><div class="empty-icon">📷</div><p>No photos yet.</p></div>';return;}
+  grid.innerHTML=photos.map(p=>`<div class="photo-card"><img class="photo-thumb" src="${p.file_url}" onclick="window.open('${p.file_url}','_blank')" loading="lazy"><div class="photo-info"><div class="photo-date">${new Date(p.created_at).toLocaleDateString()}</div>${p.stage_tag?`<div class="photo-stage">${p.stage_tag}</div>`:''} ${p.notes?`<div class="photo-note">${p.notes}</div>`:''}</div></div>`).join('');
 }
 async function handlePhotoUpload(e) {
   const files=Array.from(e.target.files);
