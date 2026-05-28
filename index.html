@@ -2175,10 +2175,9 @@ async function readReportPhoto() {
 }
   // ── MATERIAL USAGE TALLY ──────────────────────────────────────────────────
 async function loadTally() {
-  const { data } = await sb.from('materials')
+  const { data } = await sb.from('material_usage_log')
     .select('*')
-    .eq('job_id', currentJobId)
-    .in('status', ['Used']);
+    .eq('job_id', currentJobId);
 
   const rows = data || [];
   if (!rows.length) {
@@ -2206,7 +2205,7 @@ async function loadTally() {
         g.name.toUpperCase()
       );
       if (score >= 0.8) {
-        g.qty += parseFloat(row.qty_needed || 1);
+        g.qty += parseFloat(row.qty || 1);
         g.rows.push(row);
         found = true;
         break;
@@ -2215,9 +2214,7 @@ async function loadTally() {
     if (!found) {
       groups.push({
         name,
-        qty: parseFloat(row.qty_needed || 1),
-        rows: [row],
-        manualPrice: null
+        qty: parseFloat(row.qty || 1),
       });
     }
   }
