@@ -2523,9 +2523,11 @@ async function applySuggestions() {
       s.data.name     = opt.dataset.name;
       s.data.est_cost = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
     }
-    const table=s.type==='hours'?'hours_logged':'materials';
+    let table;
+    if (s.type==='hours') table='hours_logged';
+    else if (s.type==='material_used') table='material_usage_log';
+    else table='materials';
     const { error }=await sb.from(table).insert(s.data);
-    if (error) errors.push(error.message); else applied++;
   }
   setLoading(false);
   closeModal('modal-suggestions');
