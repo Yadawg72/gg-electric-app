@@ -1854,67 +1854,127 @@ async function openEditDailyReport(id) {
   loadDailyReports();
   loadHours();
 
-  // Run materials through suggestions modal
-  if (!mUsed && !mNeeded) { loadTally(); return; }
+  // Two stage suggestions — needed first then used
+let pendingNeeded = [];
+let pendingUsed   = [];
 
-  pendingSuggestions = [];
+function showSuggestionsInOrder() {
+  pendingNeeded = pendingSuggestions.filter(s => s.type === 'material_needed');
+  pendingUsed   = pendingSuggestions.filter(s => s.type === 'material_used');
 
-  if (mUsed) {
-    mUsed.split('\n').filter(l=>l.trim()).forEach(line => {
-      const parsed  = parseMatLine(line.trim());
-      const match   = fuzzyMatchPriceList(parsed.name);
-      const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
-        ? (parsed.qty * match.item.unit_price).toFixed(2) : null;
-      pendingSuggestions.push({
-        type:'material_used',
-        confidence: match ? match.confidence : 0,
-        parsedName: parsed.name,
-        qty: parsed.qty,
-        unit: parsed.unit,
-        label: `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
-        matchedItem: match ? match.item : null,
-        estCost,
-        data:{
-          job_id:    currentJobId,
-          name:      match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
-          qty_needed:parsed.qty,
-          status:    'Used',
-          est_cost:  estCost,
-          sort_order:999
-        }
-      });
-    });
+  if (pendingNeeded.length > 0) {
+    // Show needed first
+    document.querySelector('#modal-suggestions h2').textContent = 'Materials Needed — Review';
+    document.querySelector('#modal-suggestions p').textContent  = 'These materials are needed for the next visit. Approve to add to Materials & POs.';
+    document.querySelector('#modal-suggestions .btn-primary').setAttribute('onclick', 'applyNeededThenShowUsed()');
+    pendingSuggestions = pendingNeeded;
+    showSuggestions();
+  } else if (pendingUsed.length > 0) {
+    // No needed items — go straight to used
+    showUsedSuggestions();
+  }
+}
+
+async function applyNeededThenShowUsed() {
+  // Apply needed items to Materials & POs
+  setLoading(true, 'Saving needed materials...');
+  let applied=0, errors=[];
+  for (let i=0;i<pendingNeeded.length;i++) {
+    const cb=document.getElementById(`sug-${i}`);
+    if (!cb?.checked) continue;
+    const s=pendingNeeded[i];
+    const matchSel=document.getElementById(`sug-match-${i}`);
+    if (matchSel && matchSel.value) {
+      const opt=matchSel.options[matchSel.selectedIndex];
+      s.data.name     = opt.dataset.name;
+      s.data.est_cost = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
+      const userPickedManually = !s.matchedItem || s.matchedItem.item_name !== opt.dataset.name;
+      if (userPickedManually && s.parsedName && opt.dataset.name) {
+        await sb.from('material_mappings').upsert({
+          entered_text:  s.parsedName.toUpperCase().trim(),
+          price_list_id: matchSel.value,
+          item_name:     opt.dataset.name,
+          updated_at:    new Date().toISOString()
+        }, { onConflict:'entered_text' });
+        const existing = materialMappings.findIndex(m=>m.entered_text===s.parsedName.toUpperCase().trim());
+        const newMap   = { entered_text:s.parsedName.toUpperCase().trim(), price_list_id:matchSel.value, item_name:opt.dataset.name, price_list:priceList.find(p=>p.id===matchSel.value) };
+        if (existing>=0) materialMappings[existing]=newMap; else materialMappings.push(newMap);
+      }
+    }
+    const { error } = await sb.from('materials').insert(s.data);
+    if (error) errors.push(error.message); else applied++;
+  }
+  setLoading(false);
+  closeModal('modal-suggestions');
+  if (errors.length) showToast(`Saved ${applied} needed items, ${errors.length} failed`, true);
+  else if (applied > 0) showToast(`✓ ${applied} items added to Materials & POs`);
+
+  await loadMaterials();
+
+  // Now show used items
+  if (pendingUsed.length > 0) {
+    setTimeout(() => showUsedSuggestions(), 400);
+  }
+}
+
+function showUsedSuggestions() {
+  document.querySelector('#modal-suggestions h2').textContent = 'Materials Used — Review';
+  document.querySelector('#modal-suggestions p').textContent  = 'These materials were used today. Approve to add to the Material Usage Tally.';
+  document.querySelector('#modal-suggestions .btn-primary').setAttribute('onclick', 'applyUsedMaterials()');
+  pendingSuggestions = pendingUsed;
+  showSuggestions();
+}
+
+async function applyUsedMaterials() {
+  setLoading(true, 'Saving used materials...');
+  let applied=0, errors=[];
+  const usageRows = [];
+
+  for (let i=0;i<pendingUsed.length;i++) {
+    const cb=document.getElementById(`sug-${i}`);
+    if (!cb?.checked) continue;
+    const s=pendingUsed[i];
+    const matchSel=document.getElementById(`sug-match-${i}`);
+    if (matchSel && matchSel.value) {
+      const opt=matchSel.options[matchSel.selectedIndex];
+      s.data.name       = opt.dataset.name;
+      s.data.unit_price = parseFloat(opt.dataset.price)||null;
+      s.data.est_cost   = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
+      s.data.price_list_id = matchSel.value;
+      const userPickedManually = !s.matchedItem || s.matchedItem.item_name !== opt.dataset.name;
+      if (userPickedManually && s.parsedName && opt.dataset.name) {
+        await sb.from('material_mappings').upsert({
+          entered_text:  s.parsedName.toUpperCase().trim(),
+          price_list_id: matchSel.value,
+          item_name:     opt.dataset.name,
+          updated_at:    new Date().toISOString()
+        }, { onConflict:'entered_text' });
+        const existing = materialMappings.findIndex(m=>m.entered_text===s.parsedName.toUpperCase().trim());
+        const newMap   = { entered_text:s.parsedName.toUpperCase().trim(), price_list_id:matchSel.value, item_name:opt.dataset.name, price_list:priceList.find(p=>p.id===matchSel.value) };
+        if (existing>=0) materialMappings[existing]=newMap; else materialMappings.push(newMap);
+      }
+    }
+    usageRows.push(s.data);
+    applied++;
   }
 
-  if (mNeeded) {
-    mNeeded.split('\n').filter(l=>l.trim()).forEach(line => {
-      const parsed  = parseMatLine(line.trim());
-      const match   = fuzzyMatchPriceList(parsed.name);
-      const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
-        ? (parsed.qty * match.item.unit_price).toFixed(2) : null;
-      pendingSuggestions.push({
-        type:'material_needed',
-        confidence: match ? match.confidence : 0,
-        parsedName: parsed.name,
-        qty: parsed.qty,
-        unit: parsed.unit,
-        label: `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
-        matchedItem: match ? match.item : null,
-        estCost,
-        data:{
-          job_id:    currentJobId,
-          name:      match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
-          qty_needed:parsed.qty,
-          status:    'Needed',
-          est_cost:  estCost,
-          sort_order:999
-        }
-      });
-    });
+  if (usageRows.length > 0) {
+    const { error } = await sb.from('material_usage_log').insert(usageRows);
+    if (error) errors.push(error.message);
   }
 
-  if (pendingSuggestions.length > 0) showSuggestions();
-  loadTally();
+  setLoading(false);
+  closeModal('modal-suggestions');
+
+  // Reset modal buttons back to default
+  document.querySelector('#modal-suggestions h2').textContent = 'Review Daily Report Updates';
+  document.querySelector('#modal-suggestions p').textContent  = 'Claude parsed your field report. Review each item below.';
+  document.querySelector('#modal-suggestions .btn-primary').setAttribute('onclick', 'applySuggestions()');
+
+  if (errors.length) showToast(`Saved ${applied} used items, ${errors.length} failed`, true);
+  else if (applied > 0) showToast(`✓ ${applied} items added to Material Usage Tally`);
+
+  await loadTally();
 }
   
 async function submitDailyReport() {
@@ -1989,37 +2049,8 @@ async function submitDailyReport() {
   loadDailyReports();
   loadHours();
 
- // Parse materials locally
-  if (!mUsed && !mNeeded) return;
-
+ // Build suggestions — NEEDED first, USED second
   pendingSuggestions = [];
-
-  if (mUsed) {
-    mUsed.split('\n').filter(l=>l.trim()).forEach(line => {
-      const parsed  = parseMatLine(line.trim());
-      const match   = fuzzyMatchPriceList(parsed.name);
-      const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
-        ? (parsed.qty * match.item.unit_price).toFixed(2) : null;
-      pendingSuggestions.push({
-        type:'material_used',
-        confidence: match ? match.confidence : 0,
-        parsedName: parsed.name,
-        qty: parsed.qty,
-        unit: parsed.unit,
-        label: `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
-        matchedItem: match ? match.item : null,
-        estCost,
-        data:{
-          job_id: currentJobId,
-          name: match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
-          qty_needed: parsed.qty,
-          status: 'Used',
-          est_cost: estCost,
-          sort_order: 999
-        }
-      });
-    });
-  }
 
   if (mNeeded) {
     mNeeded.split('\n').filter(l=>l.trim()).forEach(line => {
@@ -2028,27 +2059,182 @@ async function submitDailyReport() {
       const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
         ? (parsed.qty * match.item.unit_price).toFixed(2) : null;
       pendingSuggestions.push({
-        type:'material_needed',
+        type:       'material_needed',
         confidence: match ? match.confidence : 0,
         parsedName: parsed.name,
-        qty: parsed.qty,
-        unit: parsed.unit,
-        label: `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
-        matchedItem: match ? match.item : null,
+        qty:        parsed.qty,
+        unit:       parsed.unit,
+        label:      `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
+        matchedItem:match ? match.item : null,
         estCost,
         data:{
-          job_id: currentJobId,
-          name: match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
-          qty_needed: parsed.qty,
-          status: 'Needed',
-          est_cost: estCost,
-          sort_order: 999
+          job_id:    currentJobId,
+          name:      match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
+          qty_needed:parsed.qty,
+          status:    'Needed',
+          est_cost:  estCost,
+          sort_order:999
         }
       });
     });
   }
 
-  if (pendingSuggestions.length > 0) showSuggestions();
+  if (mUsed) {
+    mUsed.split('\n').filter(l=>l.trim()).forEach(line => {
+      const parsed  = parseMatLine(line.trim());
+      const match   = fuzzyMatchPriceList(parsed.name);
+      const estCost = (match && match.confidence>=0.8 && match.item.unit_price)
+        ? (parsed.qty * match.item.unit_price).toFixed(2) : null;
+      pendingSuggestions.push({
+        type:       'material_used',
+        confidence: match ? match.confidence : 0,
+        parsedName: parsed.name,
+        qty:        parsed.qty,
+        unit:       parsed.unit,
+        label:      `${parsed.qty} ${parsed.unit} — ${parsed.name}`,
+        matchedItem:match ? match.item : null,
+        estCost,
+        data:{
+          job_id:      currentJobId,
+          report_date: date,
+          name:        match && match.confidence>=0.8 ? match.item.item_name : parsed.name,
+          original_text: line.trim(),
+          qty:         parsed.qty,
+          unit:        parsed.unit,
+          unit_price:  match && match.confidence>=0.8 ? match.item.unit_price : null,
+          est_cost:    estCost,
+          price_list_id: match && match.confidence>=0.8 ? match.item.id : null,
+          confidence:  match ? match.confidence : 0,
+          created_by:  currentUser.id
+        }
+      });
+    });
+  }
+
+  if (pendingSuggestions.length > 0) showSuggestionsInOrder();
+}
+
+  // Two stage suggestions — needed first then used
+let pendingNeeded = [];
+let pendingUsed   = [];
+
+function showSuggestionsInOrder() {
+  pendingNeeded = pendingSuggestions.filter(s => s.type === 'material_needed');
+  pendingUsed   = pendingSuggestions.filter(s => s.type === 'material_used');
+
+  if (pendingNeeded.length > 0) {
+    // Show needed first
+    document.querySelector('#modal-suggestions h2').textContent = 'Materials Needed — Review';
+    document.querySelector('#modal-suggestions p').textContent  = 'These materials are needed for the next visit. Approve to add to Materials & POs.';
+    document.querySelector('#modal-suggestions .btn-primary').setAttribute('onclick', 'applyNeededThenShowUsed()');
+    pendingSuggestions = pendingNeeded;
+    showSuggestions();
+  } else if (pendingUsed.length > 0) {
+    // No needed items — go straight to used
+    showUsedSuggestions();
+  }
+}
+
+async function applyNeededThenShowUsed() {
+  // Apply needed items to Materials & POs
+  setLoading(true, 'Saving needed materials...');
+  let applied=0, errors=[];
+  for (let i=0;i<pendingNeeded.length;i++) {
+    const cb=document.getElementById(`sug-${i}`);
+    if (!cb?.checked) continue;
+    const s=pendingNeeded[i];
+    const matchSel=document.getElementById(`sug-match-${i}`);
+    if (matchSel && matchSel.value) {
+      const opt=matchSel.options[matchSel.selectedIndex];
+      s.data.name     = opt.dataset.name;
+      s.data.est_cost = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
+      const userPickedManually = !s.matchedItem || s.matchedItem.item_name !== opt.dataset.name;
+      if (userPickedManually && s.parsedName && opt.dataset.name) {
+        await sb.from('material_mappings').upsert({
+          entered_text:  s.parsedName.toUpperCase().trim(),
+          price_list_id: matchSel.value,
+          item_name:     opt.dataset.name,
+          updated_at:    new Date().toISOString()
+        }, { onConflict:'entered_text' });
+        const existing = materialMappings.findIndex(m=>m.entered_text===s.parsedName.toUpperCase().trim());
+        const newMap   = { entered_text:s.parsedName.toUpperCase().trim(), price_list_id:matchSel.value, item_name:opt.dataset.name, price_list:priceList.find(p=>p.id===matchSel.value) };
+        if (existing>=0) materialMappings[existing]=newMap; else materialMappings.push(newMap);
+      }
+    }
+    const { error } = await sb.from('materials').insert(s.data);
+    if (error) errors.push(error.message); else applied++;
+  }
+  setLoading(false);
+  closeModal('modal-suggestions');
+  if (errors.length) showToast(`Saved ${applied} needed items, ${errors.length} failed`, true);
+  else if (applied > 0) showToast(`✓ ${applied} items added to Materials & POs`);
+
+  await loadMaterials();
+
+  // Now show used items
+  if (pendingUsed.length > 0) {
+    setTimeout(() => showUsedSuggestions(), 400);
+  }
+}
+
+function showUsedSuggestions() {
+  document.querySelector('#modal-suggestions h2').textContent = 'Materials Used — Review';
+  document.querySelector('#modal-suggestions p').textContent  = 'These materials were used today. Approve to add to the Material Usage Tally.';
+  document.querySelector('#modal-suggestions .btn-primary').setAttribute('onclick', 'applyUsedMaterials()');
+  pendingSuggestions = pendingUsed;
+  showSuggestions();
+}
+
+async function applyUsedMaterials() {
+  setLoading(true, 'Saving used materials...');
+  let applied=0, errors=[];
+  const usageRows = [];
+
+  for (let i=0;i<pendingUsed.length;i++) {
+    const cb=document.getElementById(`sug-${i}`);
+    if (!cb?.checked) continue;
+    const s=pendingUsed[i];
+    const matchSel=document.getElementById(`sug-match-${i}`);
+    if (matchSel && matchSel.value) {
+      const opt=matchSel.options[matchSel.selectedIndex];
+      s.data.name       = opt.dataset.name;
+      s.data.unit_price = parseFloat(opt.dataset.price)||null;
+      s.data.est_cost   = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
+      s.data.price_list_id = matchSel.value;
+      const userPickedManually = !s.matchedItem || s.matchedItem.item_name !== opt.dataset.name;
+      if (userPickedManually && s.parsedName && opt.dataset.name) {
+        await sb.from('material_mappings').upsert({
+          entered_text:  s.parsedName.toUpperCase().trim(),
+          price_list_id: matchSel.value,
+          item_name:     opt.dataset.name,
+          updated_at:    new Date().toISOString()
+        }, { onConflict:'entered_text' });
+        const existing = materialMappings.findIndex(m=>m.entered_text===s.parsedName.toUpperCase().trim());
+        const newMap   = { entered_text:s.parsedName.toUpperCase().trim(), price_list_id:matchSel.value, item_name:opt.dataset.name, price_list:priceList.find(p=>p.id===matchSel.value) };
+        if (existing>=0) materialMappings[existing]=newMap; else materialMappings.push(newMap);
+      }
+    }
+    usageRows.push(s.data);
+    applied++;
+  }
+
+  if (usageRows.length > 0) {
+    const { error } = await sb.from('material_usage_log').insert(usageRows);
+    if (error) errors.push(error.message);
+  }
+
+  setLoading(false);
+  closeModal('modal-suggestions');
+
+  // Reset modal buttons back to default
+  document.querySelector('#modal-suggestions h2').textContent = 'Review Daily Report Updates';
+  document.querySelector('#modal-suggestions p').textContent  = 'Claude parsed your field report. Review each item below.';
+  document.querySelector('#modal-suggestions .btn-primary').setAttribute('onclick', 'applySuggestions()');
+
+  if (errors.length) showToast(`Saved ${applied} used items, ${errors.length} failed`, true);
+  else if (applied > 0) showToast(`✓ ${applied} items added to Material Usage Tally`);
+
+  await loadTally();
 }
   
 function showSuggestions() {
