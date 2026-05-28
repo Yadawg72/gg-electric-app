@@ -2527,7 +2527,9 @@ async function applySuggestions() {
     if (s.type==='hours') table='hours_logged';
     else if (s.type==='material_used') table='material_usage_log';
     else table='materials';
+    console.log('Inserting into', table, s.data);
     const { error }=await sb.from(table).insert(s.data);
+    if (error) console.log('Insert error:', error.message);
   }
   setLoading(false);
   closeModal('modal-suggestions');
