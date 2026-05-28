@@ -2524,12 +2524,32 @@ async function applySuggestions() {
       s.data.est_cost = opt.dataset.price ? (parseFloat(opt.dataset.price)*(s.qty||1)).toFixed(2) : null;
     }
     let table;
-    if (s.type==='hours') table='hours_logged';
-    else if (s.type==='material_used') table='material_usage_log';
-    else table='materials';
-    console.log('Inserting into', table, s.data);
-    const { error }=await sb.from(table).insert(s.data);
-    if (error) console.log('Insert error:', error.message);
+    let insertData = s.data;
+
+    if (s.type==='hours') {
+      table = 'hours_logged';
+    } else if (s.type==='material_used') {
+      table = 'material_usage_log';
+      // Remap fields to match material_usage_log columns
+      insertData = {
+        job_id:        currentJobId,
+        report_date:   new Date().toISOString().split('T')[0],
+        name:          s.data.name,
+        original_text: s.parsedName || s.data.name,
+        qty:           s.qty || s.data.qty_needed || 1,
+        unit:          s.unit || 'EA',
+        unit_price:    s.matchedItem ? s.matchedItem.unit_price : null,
+        est_cost:      s.estCost || null,
+        price_list_id: s.matchedItem ? s.matchedItem.id : null,
+        confidence:    s.confidence || 0,
+        created_by:    currentUser.id
+      };
+    } else {
+      table = 'materials';
+    }
+
+    const { error }=await sb.from(table).insert(insertData);
+    if (error) console.log('Insert error:', error.message, insertData);
   }
   setLoading(false);
   closeModal('modal-suggestions');
