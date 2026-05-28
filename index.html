@@ -1920,7 +1920,8 @@ async function readReportPhoto() {
         },
         body: JSON.stringify({
           mode: 'vision',
-          imageBase64: reportPhotoBase64
+          imageBase64: reportPhotoBase64,
+          imageMediaType: document.getElementById('dr-photo-scan').files[0]?.type || 'image/jpeg'
         })
       }
     );
