@@ -2549,7 +2549,10 @@ async function applySuggestions() {
     if (error) { errors.push(error); console.log('Insert error:', error.message, insertData); }
     else applied++;
   }
-  ...
+  setLoading(false);
+  closeModal('modal-suggestions');
+  if (errors.length) showToast(`Applied ${applied}, ${errors.length} failed`,true);
+  else showToast(`Applied ${applied} update(s)!`);
   await loadMaterials();
   await loadHours();
   await loadTally();
