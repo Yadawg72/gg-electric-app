@@ -192,6 +192,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
 .add-row-btn:hover{background:var(--teal-pale);border-color:var(--teal);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
 .total-row td{background:var(--teal-pale)!important;font-weight:700;color:var(--teal-dark);border-top:1px solid var(--border);font-size:12px;}
 
+  /* MILESTONES */
+.milestone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 20px 18px;}
+@media(max-width:768px){.milestone-grid{grid-template-columns:1fr 1fr;}}
+.ms-card{border-radius:var(--radius);border:1px solid var(--border);border-left:4px solid var(--ms-color,var(--border));padding:11px 14px 12px;background:var(--white);transition:background .15s,border-color .15s;position:relative;}
+.ms-card.ms-done{background:var(--ms-bg);border-color:var(--ms-color);border-left-color:var(--ms-color);}
+.ms-group{font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ms-color,var(--muted));margin-bottom:3px;}
+.ms-name{font-size:16px;font-weight:700;color:var(--charcoal);line-height:1.15;margin-bottom:9px;}
+.ms-date{width:100%;border:none;border-bottom:1px solid var(--border-light);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--charcoal);padding:3px 0 2px;outline:none;cursor:pointer;transition:border-color .15s;color-scheme:light;}
+.ms-date:focus{border-bottom-color:var(--ms-color,var(--teal));}
+.ms-date::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;}
+.ms-check{position:absolute;top:10px;right:10px;width:19px;height:19px;border-radius:50%;background:var(--ms-color);color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;}
+  
 /* JOBS TABLE */
 .jobs-table-wrap{overflow-x:auto;}
 .jobs-table{width:100%;border-collapse:collapse;min-width:700px;}
@@ -586,6 +598,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--charcoal)
           </div>
         </div>
         <div class="content">
+
+          <div class="panel" id="milestones-panel">
+            <div class="panel-head" onclick="togglePanel(this.parentElement)">
+              <span class="panel-icon">🏗️</span><h2>Project Milestones</h2>
+              <div style="margin-left:auto;margin-right:8px;" id="ms-progress"></div>
+              <span class="panel-chevron">▾</span>
+            </div>
+            <div class="panel-body" style="padding:0;">
+              <div class="milestone-grid" id="milestone-grid"></div>
+            </div>
+          </div>
+
 
           <div class="panel"><div class="panel-head" onclick="togglePanel(this.parentElement)"><span class="panel-icon">📋</span><h2>Job Information</h2><span class="panel-chevron">▾</span></div><div class="panel-body"><div class="info-grid info-grid-3" id="job-info-grid"></div></div></div>
 
@@ -1445,6 +1469,7 @@ async function openJob(id) {
     const bc=s=>({Active:'active','On Hold':'on',Complete:'complete',Pending:'pending'}[s]||'pending');
     document.getElementById('job-meta-status').innerHTML = `<span class="badge badge-${bc(job.status)}">${job.status||'—'}</span>`;
     renderInfoGrid(job);
+    renderMilestones(job);
     loadBillingInfo();
     loadDailyReports();
   }
@@ -1462,6 +1487,39 @@ function renderInfoGrid(job) {
       ?`<select onchange="saveField('jobs','${k}',this.value)">${opts.map(o=>`<option ${job[k]===o?'selected':''}>${o}</option>`).join('')}</select>`
       :`<input type="${t||'text'}" value="${esc(job[k])}" placeholder="—" onchange="saveField('jobs','${k}',this.value)">`
     }</div>`).join('');
+}
+
+  const MILESTONES = [
+  { key:'roughin_start',      group:'Rough-In',  name:'Start',       color:'#2980b9', bg:'#eaf4fb' },
+  { key:'roughin_complete',   group:'Rough-In',  name:'Complete',    color:'#2980b9', bg:'#eaf4fb' },
+  { key:'roughin_inspection', group:'Rough-In',  name:'Inspection',  color:'#2980b9', bg:'#eaf4fb' },
+  { key:'trimout_start',      group:'Trim-Out',  name:'Start',       color:'#5B9B9C', bg:'#eaf5f5' },
+  { key:'trimout_complete',   group:'Trim-Out',  name:'Complete',    color:'#5B9B9C', bg:'#eaf5f5' },
+  { key:'final_inspection',   group:'Final',     name:'Inspection',  color:'#3a9e6f', bg:'#eaf6f0' },
+];
+
+function renderMilestones(job) {
+  const done = MILESTONES.filter(m => job[m.key]).length;
+  const prog = document.getElementById('ms-progress');
+  if (prog) prog.innerHTML = done > 0
+    ? `<span style="background:var(--teal-pale);color:var(--teal-dark);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;">${done} of ${MILESTONES.length} complete</span>`
+    : '';
+  document.getElementById('milestone-grid').innerHTML = MILESTONES.map(m => {
+    const val = job[m.key] || '';
+    const isDone = !!val;
+    return `<div class="ms-card${isDone?' ms-done':''}" style="--ms-color:${m.color};--ms-bg:${m.bg};">
+      ${isDone ? `<div class="ms-check">✓</div>` : ''}
+      <div class="ms-group">${m.group}</div>
+      <div class="ms-name">${m.name}</div>
+      <input type="date" class="ms-date" value="${val}" onchange="saveMilestone('${m.key}',this)">
+    </div>`;
+  }).join('');
+}
+
+async function saveMilestone(key, input) {
+  await saveField('jobs', key, input.value || null);
+  const job = jobs.find(j => j.id === currentJobId);
+  if (job) renderMilestones(job);
 }
 
 async function saveField(table, col, val) {
