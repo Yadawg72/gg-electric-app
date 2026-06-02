@@ -2273,9 +2273,9 @@ async function loadTally() {
       groups.push({
         name,
         qty: parseFloat(row.qty || 1),
+        rows: [row],
       });
     }
-  }
 
   // Match each group against price list
   const matched   = [];
