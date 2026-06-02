@@ -2316,10 +2316,10 @@ async function loadTally() {
       ? `<span class="tally-match-high">✅ ${Math.round(g.confidence*100)}%</span>`
       : `<span class="tally-match-low">⚠️ ${Math.round(g.confidence*100)}%</span>`;
 
-    return `<tr>
-      <td style="font-weight:500;">${g.priceItem ? g.priceItem.item_name : g.name}</td>
-      <td style="text-align:center;font-family:'DM Mono',monospace;font-weight:600;">${g.qty % 1 === 0 ? g.qty : g.qty.toFixed(1)}</td>
-      <td style="text-align:center;"><span style="background:var(--teal-pale);color:var(--teal-dark);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;">${g.unit}</span></td>
+      return `<tr>
+      <td><input type="text" value="${(g.priceItem ? g.priceItem.item_name : g.name).replace(/"/g,'&quot;')}" onchange="updateTallyField(${i},'name',this.value)" style="border:none;background:transparent;font-weight:500;width:100%;min-width:100px;font-family:inherit;font-size:13px;color:var(--charcoal);padding:0;"></td>
+      <td style="text-align:center;"><input type="number" value="${g.qty % 1 === 0 ? g.qty : g.qty.toFixed(1)}" step="0.1" min="0" onchange="updateTallyField(${i},'qty',this.value)" style="border:none;background:transparent;font-family:'DM Mono',monospace;font-weight:600;width:50px;text-align:center;font-size:13px;padding:0;color:var(--charcoal);"></td>
+      <td style="text-align:center;"><select onchange="updateTallyField(${i},'unit',this.value)" style="background:var(--teal-pale);color:var(--teal-dark);border:none;padding:1px 5px;border-radius:10px;font-size:10px;font-weight:600;font-family:inherit;"><option value="EA" ${g.unit==='EA'?'selected':''}>EA</option><option value="LF" ${g.unit==='LF'?'selected':''}>LF</option><option value="BOX" ${g.unit==='BOX'?'selected':''}>BOX</option><option value="SET" ${g.unit==='SET'?'selected':''}>SET</option></select></td>
       <td style="text-align:right;">
         <input class="tally-price-input" type="number" step="0.01"
           value="${g.unitPrice.toFixed(2)}"
@@ -2330,7 +2330,7 @@ async function loadTally() {
         $${g.estCost.toFixed(2)}
       </td>
       <td style="text-align:center;">${matchBadge}</td>
-      <td></td>
+      <td style="text-align:center;"><button onclick="deleteTallyGroup(${i})" style="background:none;border:none;cursor:pointer;color:#e74c3c;font-size:16px;padding:2px 6px;line-height:1;" title="Remove">×</button></td>
     </tr>`;
   }).join('') || emptyRow(7, 'No matched materials');
 
@@ -2458,6 +2458,10 @@ async function saveReviewPrice(idx, name) {
 
 function parseMatLine(line) {
   const patterns = [
+    // (2) item  or  (2) - item
+    [/^\((\d+\.?\d*)\)\s*(?:-\s*)?(.+)$/i, 'EA'],
+    // 60' of item  or  60' item  (apostrophe-feet → LF)
+    [/^(\d+\.?\d*)'\s*(?:of\s+)?(.+)$/i, 'LF'],
     // 500ft #12 THHN or 500 ft #12 THHN
     [/^(\d+\.?\d*)\s*ft[\s\-]+(.+)$/i, 'LF'],
     [/^(\d+\.?\d*)\s*lf[\s\-]+(.+)$/i, 'LF'],
