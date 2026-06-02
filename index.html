@@ -2317,7 +2317,7 @@ async function loadTally() {
       ? `<span class="tally-match-high">✅ ${Math.round(g.confidence*100)}%</span>`
       : `<span class="tally-match-low">⚠️ ${Math.round(g.confidence*100)}%</span>`;
 
-      return `<tr>
+          return `<tr>
       <td><input type="text" value="${(g.priceItem ? g.priceItem.item_name : g.name).replace(/"/g,'&quot;')}" onchange="updateTallyField(${i},'name',this.value)" style="border:none;background:transparent;font-weight:500;width:100%;min-width:100px;font-family:inherit;font-size:13px;color:var(--charcoal);padding:0;"></td>
       <td style="text-align:center;"><input type="number" value="${g.qty % 1 === 0 ? g.qty : g.qty.toFixed(1)}" step="0.1" min="0" onchange="updateTallyField(${i},'qty',this.value)" style="border:none;background:transparent;font-family:'DM Mono',monospace;font-weight:600;width:50px;text-align:center;font-size:13px;padding:0;color:var(--charcoal);"></td>
       <td style="text-align:center;"><select onchange="updateTallyField(${i},'unit',this.value)" style="background:var(--teal-pale);color:var(--teal-dark);border:none;padding:1px 5px;border-radius:10px;font-size:10px;font-weight:600;font-family:inherit;"><option value="EA" ${g.unit==='EA'?'selected':''}>EA</option><option value="LF" ${g.unit==='LF'?'selected':''}>LF</option><option value="BOX" ${g.unit==='BOX'?'selected':''}>BOX</option><option value="SET" ${g.unit==='SET'?'selected':''}>SET</option></select></td>
@@ -2411,6 +2411,43 @@ function updateTallyPrice(idx, val) {
     'Est. $' + total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
+  async function updateTallyField(idx, field, value) {
+  const g = window._tallyGroups[idx];
+  if (!g) return;
+  if (field === 'name') {
+    g.name = value;
+    if (g.rows && g.rows.length) {
+      const ids = g.rows.map(r => r.id);
+      await sb.from('material_usage_log').update({ name: value }).in('id', ids);
+    }
+  } else if (field === 'qty') {
+    g.qty = parseFloat(value) || g.qty;
+    g.estCost = g.qty * g.unitPrice;
+    const costEl = document.getElementById(`tally-cost-${idx}`);
+    if (costEl) costEl.textContent = '$' + g.estCost.toFixed(2);
+    const total = (window._tallyGroups||[]).reduce((s,gr)=>s+(gr.estCost||0),0)
+                + (window._tallyUnmatched||[]).reduce((s,gr)=>s+(gr.estCost||0),0);
+    document.getElementById('tally-grand-total').textContent =
+      '$' + total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('tally-total-badge').textContent =
+      'Est. $' + total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  } else if (field === 'unit') {
+    g.unit = value;
+  }
+}
+
+async function deleteTallyGroup(idx) {
+  const g = window._tallyGroups[idx];
+  if (!g) return;
+  if (!confirm(`Remove "${g.name}" from the tally?`)) return;
+  if (g.rows && g.rows.length) {
+    const ids = g.rows.map(r => r.id);
+    await sb.from('material_usage_log').delete().in('id', ids);
+  }
+  await loadTally();
+}
+
+  
 function applyReviewPrice(idx, name, val) {
   const price   = parseFloat(val) || 0;
   const unitEl  = document.getElementById(`tally-review-unit-${idx}`);
